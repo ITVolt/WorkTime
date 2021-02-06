@@ -12,10 +12,13 @@ namespace WorkTime.WindowsEvents
         private const uint WindowEventOutOfContext = 0;
         private const uint EventSystemForeground = 3;
 
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable - If it is only local it will get garbage collected and crash the program
+        private readonly WinEventDelegate winEventDelegate;
+
         public WindowFocusChangedProvider()
         {
-            var winEventDelegate = new WinEventDelegate(WinEventProc);
-            SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, winEventDelegate, 0, 0, WindowEventOutOfContext);
+            winEventDelegate = WinEventProc;
+            SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, this.winEventDelegate, 0, 0, WindowEventOutOfContext);
         }
 
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
