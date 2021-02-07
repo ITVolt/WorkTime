@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using System.IO;
 using WorkTime.WindowsEvents;
 
@@ -8,22 +9,26 @@ namespace WorkTime.DataStorage
     {
         public static JsonHandler Instance { get; } = new JsonHandler();
 
-        private string settingsPath = @"D:\Development\Workspace\WorkTime\settings.json";
-        private string logPath = @"D:\Development\Workspace\WorkTime\log.json";
+        private readonly string settingsPath = @"settings.json";
+        private readonly string logPath = @"log.json";
 
         private JsonHandler()
         {
-
-        }
-
-        public void Log(FocusChangedEvent focusChangedEvent)
-        {
-            
+            if (!File.Exists(settingsPath))
+            {
+                var settings = new Settings {WorkProcesses = new List<string> {"mstsc", "Teams", "slack"}};
+                File.WriteAllText(settingsPath, JsonConvert.SerializeObject(settings, Formatting.Indented));
+            }
         }
 
         public Settings GetSettings()
         {
             return JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsPath));
+        }
+
+        public void Log(FocusChangedEvent focusChangedEvent)
+        {
+            
         }
     }
 }
