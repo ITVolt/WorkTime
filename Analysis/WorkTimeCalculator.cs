@@ -6,43 +6,39 @@ namespace WorkTime.Analysis
 {
     internal class WorkTimeCalculator
     {
-        public static long CalculateWorkTimeOfDay(DayLogEntry day)
+        public static (TimeSpan workTimeToday, bool isCurrentlyWorking) CalculateWorkTimeOfDay(DayLogEntry day)
         {
             var focusChanges = day.FocusChangedLogEntries.OrderBy(x => x.Timestamp);
 
-            long cumulativeWorkTime = 0;
+            var cumulativeWorkTime = new TimeSpan();
             var lastProcessWasWork = false;
             var lastFocusChange = DateTime.Today;
             foreach (var focusChange in focusChanges)
             {
-                if (ProcessCountsAsWork(focusChange.ProcessName))
+                var currentProcessCountsAsWork = ProcessCountsAsWork(focusChange.ProcessName);
+                
+                if (lastProcessWasWork)
                 {
-                    if (lastProcessWasWork)
-                    {
-                        cumulativeWorkTime += (focusChange.Timestamp - lastFocusChange).Milliseconds;
-                    }
-
-                    lastProcessWasWork = true;
-                }
-                else
-                {
-                    lastProcessWasWork = false;
+                    cumulativeWorkTime += focusChange.Timestamp - lastFocusChange;
                 }
 
+                lastProcessWasWork = currentProcessCountsAsWork;
                 lastFocusChange = focusChange.Timestamp;
             }
 
-            return cumulativeWorkTime;
+            if (lastProcessWasWork)
+            {
+                cumulativeWorkTime += DateTime.Now - lastFocusChange;
+            }
+
+            return (workTimeToday: cumulativeWorkTime, isCurrentlyWorking: lastProcessWasWork);
         }
 
-        public static bool ProcessCountsAsWork(string processName)
+        private static bool ProcessCountsAsWork(string processName)
         {
-            switch (processName)
-            {
-                case "slack": return true;
-                case "teams": return true;
-                default: return false;
-            }
+            var settings = JsonHandler.Instance.GetSettings();
+
+            return settings.WorkProcesses.Contains(processName);
         }
     }
 }

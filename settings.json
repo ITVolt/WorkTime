@@ -1,0 +1,7 @@
+{
+  "WorkProcesses": [
+    "mstsc",
+    "Teams",
+    "slack"
+  ]
+}

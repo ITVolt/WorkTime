@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WorkTime.WindowsEvents;
 
 namespace WorkTime.DataStorage
 {
@@ -25,5 +26,7 @@ namespace WorkTime.DataStorage
             ProcessName = processName;
             WindowTitle = windowTitle;
         }
+
+        public FocusChangedLogEntry(FocusChangedEvent focusChangedEvent) : this(timestamp: DateTime.Now, processName: focusChangedEvent.ProcessName, windowTitle: focusChangedEvent.WindowTitle) { }
     }
 }

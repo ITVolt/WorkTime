@@ -1,27 +1,35 @@
 ﻿<Window x:Class="WorkTime.MainWindow"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WorkTime"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Work Time" Height="450" Width="600" MinHeight="110" MinWidth="140">
     <Grid>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="4*"/>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Viewbox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" >
+                <TextBlock Name="WorkTimeTextBlock"
+                           Text="{Binding Path=WorkTimeText}" d:Text="5:38"
+                           Background="{Binding Path=WorkTimeBackground}" d:Background="Wheat">
+                </TextBlock>
+            </Viewbox>
+            <ScrollViewer Name="LogScrollViewer" Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <TextBlock Name="LogTextBlock"
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Stretch"
-                           TextTrimming="CharacterEllipsis" />
+                           TextTrimming="CharacterEllipsis"
+                           d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
             </ScrollViewer>
         </Grid>
     </Grid>
