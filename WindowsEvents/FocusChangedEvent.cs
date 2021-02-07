@@ -1,13 +1,13 @@
 ﻿namespace WorkTime.WindowsEvents
 {
-    public class FocusChangedEvent
+    internal class FocusChangedEvent
     {
-        public string WindowText { get; }
+        public string WindowTitle { get; }
         public string ProcessName { get; }
 
-        public FocusChangedEvent(string windowText, string processName)
+        public FocusChangedEvent(string windowTitle, string processName)
         {
-            WindowText = windowText;
+            WindowTitle = windowTitle;
             ProcessName = processName;
         }
     }

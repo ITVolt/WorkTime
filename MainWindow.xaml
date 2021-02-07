@@ -24,6 +24,5 @@
                            TextTrimming="CharacterEllipsis" />
             </ScrollViewer>
         </Grid>
-
     </Grid>
 </Window>

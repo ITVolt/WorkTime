@@ -7,7 +7,7 @@ namespace WorkTime.WindowsEvents
 {
     public class WindowFocusChangedProvider
     {
-        public EventHandler<FocusChangedEvent> WindowFocusChanged;
+        internal EventHandler<FocusChangedEvent> WindowFocusChanged;
 
         private const uint WindowEventOutOfContext = 0;
         private const uint EventSystemForeground = 3;

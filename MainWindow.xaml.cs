@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 using WorkTime.WindowsEvents;
 
 namespace WorkTime
@@ -21,8 +8,6 @@ namespace WorkTime
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly WindowFocusChangedProvider windowFocusChangedProvider = new WindowFocusChangedProvider();
-
         public MainWindow()
         {
             InitializeComponent();
@@ -30,14 +15,11 @@ namespace WorkTime
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
         }
 
-        //public void SetEventListener(WindowFocusChangedProvider windowFocusChangedProvider)
-        //{
-        //    windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
-        //}
+        private readonly WindowFocusChangedProvider windowFocusChangedProvider = new WindowFocusChangedProvider();
 
-        public void OnWindowFocusChanged(object sender, FocusChangedEvent focusChangedEvent)
+        internal void OnWindowFocusChanged(object sender, FocusChangedEvent focusChangedEvent)
         {
-            LogTextBlock.Text += $"{focusChangedEvent.ProcessName} - {focusChangedEvent.WindowText}\r\n";
+            LogTextBlock.Text += $"{focusChangedEvent.ProcessName} - {focusChangedEvent.WindowTitle}\r\n";
         }
     }
 }
