@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WorkTime"
         mc:Ignorable="d"
-        Title="Work Time" Height="450" Width="600" MinHeight="110" MinWidth="140">
+        Title="Work Time" Height="450" Width="600" MinHeight="{Binding Path=CollapsedHeight}" MinWidth="{Binding Path=CollapsedWidth}">
     <Grid>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -31,6 +31,11 @@
                            TextTrimming="CharacterEllipsis"
                            d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
             </ScrollViewer>
+            <Button Name="CollapseButton"  Grid.Column="0" Grid.Row="1"
+                    Content="Collapse"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Left"
+                    Click="CollapseButton_OnClick"/>
         </Grid>
     </Grid>
 </Window>

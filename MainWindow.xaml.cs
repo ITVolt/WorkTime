@@ -8,6 +8,8 @@ using System.Windows.Threading;
 using WorkTime.Analysis;
 using WorkTime.DataStorage;
 using WorkTime.WindowsEvents;
+using Brushes = System.Windows.Media.Brushes;
+using Point = System.Drawing.Point;
 
 namespace WorkTime
 {
@@ -43,6 +45,9 @@ namespace WorkTime
             }
         }
 
+        public static double CollapsedWidth => 140;
+        public static double CollapsedHeight => 110;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -77,6 +82,16 @@ namespace WorkTime
         {
             LogTextBlock.Text += $"{focusChangedEvent.ProcessName} - {focusChangedEvent.WindowTitle}\r\n";
             LogScrollViewer.ScrollToEnd();
+        }
+
+        private void CollapseButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Width = CollapsedWidth;
+            Height = CollapsedHeight;
+
+            var currentScreen = System.Windows.Forms.Screen.FromPoint(new Point((int) Left, (int) Top));
+            Left = currentScreen.WorkingArea.Right - Width;
+            Top = currentScreen.WorkingArea.Bottom - Height;
         }
 
         #region INotifyPropertyChanged
