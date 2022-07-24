@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
-using WorkTime.Analysis;
+using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
 using WorkTime.WindowsEvents;
 using Brushes = System.Windows.Media.Brushes;
@@ -22,6 +22,8 @@ namespace WorkTime
         private readonly DispatcherTimer passiveUpdateTimer = new();
         private readonly TimeSpan passiveUpdateInterval = TimeSpan.FromMinutes(1);
         private readonly DayLogEntry currentDay = new(new List<FocusChangedLogEntry>());
+
+        private TimeCalculator WorkTimeCalculator;
 
         private string workTimeText;
         public string WorkTimeText
@@ -52,8 +54,15 @@ namespace WorkTime
         {
             InitializeComponent();
 
+            SetupTimeCalculator();
             SetupPassiveUpdate();
+
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
+        }
+
+        private void SetupTimeCalculator(){
+            var settings = JsonHandler.Instance.GetSettings();
+            this.WorkTimeCalculator = TimeCalculatorFactory.CreateCalculator(settings);
         }
 
         private void SetupPassiveUpdate()

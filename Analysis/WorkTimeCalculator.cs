@@ -1,22 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using WorkTime.DataStorage;
 
 namespace WorkTime.Analysis
 {
-    internal class WorkTimeCalculator
+    internal class WorkTimeCalculator : TimeCalculator
     {
-        public static (TimeSpan workTimeToday, bool isCurrentlyWorking) CalculateWorkTimeOfDay(DayLogEntry day)
+
+        private readonly HashSet<string> workProcesses;
+
+        public WorkTimeCalculator(IEnumerable<string> workProcesses)
+        {
+            this.workProcesses = new HashSet<string>(workProcesses);
+        }
+
+        public override (TimeSpan workTimeToday, bool isCurrentlyWorking) CalculateWorkTimeOfDay(DayLogEntry day)
         {
             var focusChanges = day.FocusChangedLogEntries.OrderBy(x => x.Timestamp);
 
             var cumulativeWorkTime = new TimeSpan();
             var lastProcessWasWork = false;
             var lastFocusChange = DateTime.Today;
+
             foreach (var focusChange in focusChanges)
             {
-                var currentProcessCountsAsWork = ProcessCountsAsWork(focusChange.ProcessName);
-                
+                var currentProcessCountsAsWork = ProcessCountAsWork(focusChange);
+
                 if (lastProcessWasWork)
                 {
                     cumulativeWorkTime += focusChange.Timestamp - lastFocusChange;
@@ -34,11 +44,9 @@ namespace WorkTime.Analysis
             return (workTimeToday: cumulativeWorkTime, isCurrentlyWorking: lastProcessWasWork);
         }
 
-        private static bool ProcessCountsAsWork(string processName)
+        private bool ProcessCountAsWork(FocusChangedLogEntry focusChange)
         {
-            var settings = JsonHandler.Instance.GetSettings();
-
-            return settings.WorkProcesses.Contains(processName);
+            return workProcesses.Contains(focusChange.ProcessName);
         }
     }
 }
