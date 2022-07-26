@@ -16,11 +16,11 @@ namespace WorkTime.Analysis {
 
         internal abstract (TimeSpan workTimeToday, FocusedOn focusedOn) CalculateWorkTime(IEnumerable<Process> processes);
 
-        private static IEnumerable<Process> ConvertToProcess(DayLogEntry day)
+        private static IList<Process> ConvertToProcess(DayLogEntry day)
         {
             var processes = new List<Process>() { };
             
-            var focusChanges = day.FocusChangedLogEntries.OrderBy(x => x.Timestamp);
+            var focusChanges = day.FocusChangedLogEntries.OrderBy(x => x.Timestamp).ToList();
 
             var lastProcessStart = focusChanges.First().Timestamp;
             var lastProcessWasWork = ProcessCountAsWork(focusChanges.First().ProcessName);
