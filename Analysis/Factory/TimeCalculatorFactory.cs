@@ -1,4 +1,5 @@
 ﻿using System;
+using WorkTime.Analysis.Calculators;
 using WorkTime.DataStorage;
 
 namespace WorkTime.Analysis.Factory
@@ -8,9 +9,9 @@ namespace WorkTime.Analysis.Factory
         public static TimeCalculator CreateCalculator(Settings settings)
         {
             if ( settings.NrbOfMinutesBreakPerHour >= 0 && settings.NrbOfMinutesBreakPerHour < 60 ){
-                return new WorkWithBreakCalculator(settings.WorkProcesses, TimeSpan.FromMinutes(settings.NrbOfMinutesBreakPerHour), TimeSpan.FromMinutes(60));
+                return new WorkWithBreakCalculator(TimeSpan.FromMinutes(settings.NrbOfMinutesBreakPerHour));
             } else {
-                return new WorkTimeCalculator(settings.WorkProcesses);
+                return new WorkTimeCalculator();
             }
         }
     }

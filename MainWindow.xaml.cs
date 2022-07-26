@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using WorkTime.Analysis;
+using WorkTime.Analysis.Calculators;
 using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
 using WorkTime.WindowsEvents;
@@ -82,9 +84,20 @@ namespace WorkTime
 
         private void UpdateWorkTimeText()
         {
-            var (workTimeToday, isCurrentlyWorking) = WorkTimeCalculator.CalculateWorkTimeOfDay(currentDay);
+            var (workTimeToday, currentFocusingOn) = WorkTimeCalculator.CalculateWorkTimeOfDay(currentDay);
             WorkTimeText = workTimeToday.ToString(@"h\:mm");
-            WorkTimeBackground = isCurrentlyWorking ? Brushes.ForestGreen : Brushes.Wheat;
+            UpdateBackground(currentFocusingOn);
+        }
+        
+        private void UpdateBackground(FocusedOn focusedOn)
+        {
+            WorkTimeBackground = focusedOn switch
+            {
+                Analysis.FocusedOn.NotWork => Brushes.Wheat,
+                Analysis.FocusedOn.Break => Brushes.CadetBlue,
+                Analysis.FocusedOn.Work => Brushes.ForestGreen,
+                _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
+            };
         }
 
         private void UpdateLog(FocusChangedEvent focusChangedEvent)
