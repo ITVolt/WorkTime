@@ -1,9 +1,8 @@
-﻿namespace WorkTime.Analysis
+﻿namespace WorkTime.Analysis;
+
+internal enum FocusedOn
 {
-    internal enum FocusedOn
-    {
-        Break,
-        Work,
-        NotWork
-    }
+    Break,
+    Work,
+    NotWork
 }

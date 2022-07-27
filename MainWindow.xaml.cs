@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WorkTime.Analysis;
@@ -10,7 +11,6 @@ using WorkTime.Analysis.Calculators;
 using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
 using WorkTime.WindowsEvents;
-using Brushes = System.Windows.Media.Brushes;
 using Point = System.Drawing.Point;
 
 namespace WorkTime
@@ -25,7 +25,7 @@ namespace WorkTime
         private readonly TimeSpan passiveUpdateInterval = TimeSpan.FromMinutes(1);
         private readonly DayLogEntry currentDay = new(new List<FocusChangedLogEntry>());
 
-        private TimeCalculator WorkTimeCalculator;
+        private TimeCalculator workTimeCalculator;
 
         private string workTimeText;
         public string WorkTimeText
@@ -64,7 +64,7 @@ namespace WorkTime
 
         private void SetupTimeCalculator(){
             var settings = JsonHandler.Instance.GetSettings();
-            this.WorkTimeCalculator = TimeCalculatorFactory.CreateCalculator(settings);
+            workTimeCalculator = TimeCalculatorFactory.CreateCalculator(settings);
         }
 
         private void SetupPassiveUpdate()
@@ -84,7 +84,7 @@ namespace WorkTime
 
         private void UpdateWorkTimeText()
         {
-            var (workTimeToday, currentFocusingOn) = WorkTimeCalculator.CalculateWorkTimeOfDay(currentDay);
+            var (workTimeToday, currentFocusingOn) = workTimeCalculator.CalculateWorkTimeOfDay(currentDay);
             WorkTimeText = workTimeToday.ToString(@"h\:mm");
             UpdateBackground(currentFocusingOn);
         }
@@ -93,9 +93,9 @@ namespace WorkTime
         {
             WorkTimeBackground = focusedOn switch
             {
-                Analysis.FocusedOn.NotWork => Brushes.Wheat,
-                Analysis.FocusedOn.Break => Brushes.CadetBlue,
-                Analysis.FocusedOn.Work => Brushes.ForestGreen,
+                FocusedOn.NotWork => Brushes.Wheat,
+                FocusedOn.Break => Brushes.CadetBlue,
+                FocusedOn.Work => Brushes.ForestGreen,
                 _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
             };
         }
@@ -111,7 +111,7 @@ namespace WorkTime
             Width = CollapsedWidth;
             Height = CollapsedHeight;
 
-            var currentScreen = System.Windows.Forms.Screen.FromPoint(new Point((int) Left, (int) Top));
+            var currentScreen = Screen.FromPoint(new Point((int) Left, (int) Top));
             Left = currentScreen.WorkingArea.Right - Width;
             Top = currentScreen.WorkingArea.Bottom - Height;
         }

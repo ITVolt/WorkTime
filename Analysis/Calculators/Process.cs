@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace WorkTime.Analysis.Calculators
+namespace WorkTime.Analysis.Calculators;
+
+public class Process
 {
-    internal class Process
+    public TimeSpan Duration { get; }
+    
+    public bool IsWork { get; }
+    
+    public Process(TimeSpan duration, bool isWork)
     {
-        public TimeSpan Duration { get; }
-
-        public bool IsWork { get; }
-
-        public Process(TimeSpan duration, bool isWork)
-        {
-            Duration = duration;
-            IsWork = isWork;
-        }
+        Duration = duration;
+        IsWork = isWork;
     }
 }

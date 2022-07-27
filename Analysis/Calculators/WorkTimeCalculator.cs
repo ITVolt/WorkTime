@@ -1,15 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using WorkTime.Analysis.Counters;
 
-namespace WorkTime.Analysis.Calculators
+namespace WorkTime.Analysis.Calculators;
+
+internal class WorkTimeCalculator : TimeCalculator
 {
-    internal class WorkTimeCalculator : TimeCalculator
+    private WorkCounter workCounter;
+
+    internal override void SetupCounters(ProcessPublisher processPublisher)
     {
-        internal override (TimeSpan workTimeToday, FocusedOn focusedOn) CalculateWorkTime(IEnumerable<Process> processes)
-        {
-            return (processes.Aggregate(TimeSpan.Zero, (workTime, process) => process.IsWork ? workTime + process.Duration : workTime), 
-                processes.Last().IsWork ? FocusedOn.Work : FocusedOn.NotWork);
-        }
+        workCounter = new WorkCounter();
+        workCounter.Subscribe(processPublisher);
+    }
+
+    internal override void UnsubscribeCounters(ProcessPublisher processPublisher)
+    {
+        workCounter.Unsubscribe(processPublisher);
+    }
+
+    internal override FocusedOn GetCurrentFocus(Process currentProcess)
+    {
+        return currentProcess.IsWork ? FocusedOn.Work : FocusedOn.Break;
+    }
+
+    internal override TimeSpan GetWorkTime()
+    {
+        return workCounter.GetWorkTime();
     }
 }

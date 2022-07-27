@@ -1,40 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using WorkTime.Analysis.Counter;
+using WorkTime.Analysis.Counters;
 
-namespace WorkTime.Analysis.Calculators
+namespace WorkTime.Analysis.Calculators;
+
+internal class WorkWithBreakCalculator : TimeCalculator
 {
-    internal class WorkWithBreakCalculator : TimeCalculator
+    private readonly TimeSpan breakTimeAllowedPerHour;
+
+    private BreakCounter breakCounter;
+    private WorkCounter workCounter;
+
+    public WorkWithBreakCalculator(TimeSpan breakTimeAllowedPerHour)
     {
-        private readonly TimeSpan breakTimeAllowedPerHour;
+        this.breakTimeAllowedPerHour = breakTimeAllowedPerHour;
+    }
 
-        public WorkWithBreakCalculator(TimeSpan breakTimeAllowedPerHour)
-        {
-            this.breakTimeAllowedPerHour = breakTimeAllowedPerHour;
-        }
+    internal override void SetupCounters(ProcessPublisher processPublisher)
+    {
+        workCounter = new WorkCounter();
+        breakCounter = new BreakCounter(breakTimeAllowedPerHour);
+        workCounter.Subscribe(processPublisher);
+        breakCounter.Subscribe(processPublisher);
+    }
 
-        internal override (TimeSpan workTimeToday, FocusedOn focusedOn) CalculateWorkTime(IEnumerable<Process> processes)
-        {
-            var workTime = TimeSpan.Zero;
-            var breakCounter = new BreakCounter(breakTimeAllowedPerHour);
+    internal override void UnsubscribeCounters(ProcessPublisher processPublisher)
+    {
+        workCounter.Unsubscribe(processPublisher);
+        breakCounter.Unsubscribe(processPublisher);
+    }
 
-            foreach (var process in processes.SkipLast(1))
-            {
-                workTime += process.IsWork ? process.Duration : TimeSpan.Zero;
-                breakCounter.AddProcess(process);
-            }
+    internal override FocusedOn GetCurrentFocus(Process currentProcess)
+    {
+        return currentProcess.IsWork ? FocusedOn.Work :
+            breakCounter.IsProcessBreak(currentProcess) ? FocusedOn.Break :
+            FocusedOn.NotWork;
+    }
 
-            var lastProccess = processes.Last();
-
-            var currentFocus = lastProccess.IsWork ? FocusedOn.Work :
-                                    breakCounter.IsProcessBreak(lastProccess) ?
-                                        FocusedOn.Break :
-                                        FocusedOn.NotWork;
-
-            breakCounter.AddProcess(lastProccess);
-
-            return (workTime + breakCounter.GetBreakTime(), currentFocus);
-        }
+    internal override TimeSpan GetWorkTime()
+    {
+        return workCounter.GetWorkTime() + breakCounter.GetBreakTime();
     }
 }

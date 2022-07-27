@@ -1,50 +1,52 @@
 ﻿using System;
-using WorkTime.Analysis;
 using WorkTime.Analysis.Calculators;
 
-namespace WorkTime.Analysis.Counter
+namespace WorkTime.Analysis.Counters;
+
+internal class BreakCounter : Counter
 {
-    class BreakCounter
+    private readonly TimeSpan breakTimeAllowedPerHour;
+    private readonly TimeSpan workTimeBeforeBreak;
+
+    private TimeSpan remainingBreakTime;
+    private TimeSpan remainingWorkBeforeBreak;
+
+    private TimeSpan totalBreakTime;
+
+    public BreakCounter(TimeSpan breakTimeAllowedPerHour)
     {
-        private readonly TimeSpan breakTimeAllowedPerHour;
-        private readonly TimeSpan workTimeBeforeBreak;
+        this.breakTimeAllowedPerHour = breakTimeAllowedPerHour;
+        workTimeBeforeBreak = TimeSpan.FromHours(1) - this.breakTimeAllowedPerHour;
 
-        private TimeSpan remainingBreakTime;
-        private TimeSpan reamainingWorkBeforeBreak;
+        remainingBreakTime = this.breakTimeAllowedPerHour;
+        remainingWorkBeforeBreak = workTimeBeforeBreak;
+    }
 
-        private TimeSpan totalBreakTime;
-
-        public BreakCounter(TimeSpan breakTimeAllowedPerHour)
+    public override void AddProcess(object _, Process process)
+    {
+        if (process.IsWork)
         {
-            this.breakTimeAllowedPerHour = breakTimeAllowedPerHour;
-            this.workTimeBeforeBreak = TimeSpan.FromHours(1) - breakTimeAllowedPerHour;
-
-            this.remainingBreakTime = breakTimeAllowedPerHour;
-            this.reamainingWorkBeforeBreak = workTimeBeforeBreak;
-        }
-
-        public void AddProcess(Process process)
-        {
-            if (process.IsWork)
+            remainingWorkBeforeBreak -= process.Duration;
+            if (remainingWorkBeforeBreak <= TimeSpan.Zero)
             {
-                reamainingWorkBeforeBreak -= process.Duration;
-                if(reamainingWorkBeforeBreak <= TimeSpan.Zero)
-                {
-                    this.remainingBreakTime = breakTimeAllowedPerHour;
-                    this.reamainingWorkBeforeBreak = workTimeBeforeBreak;
-                }
-            } else if(this.remainingBreakTime > TimeSpan.Zero)
-            {
-                totalBreakTime += new TimeSpan(Math.Min(remainingBreakTime.Ticks, process.Duration.Ticks));
-                remainingBreakTime -= process.Duration;
+                remainingBreakTime = breakTimeAllowedPerHour;
+                remainingWorkBeforeBreak = workTimeBeforeBreak;
             }
         }
-
-        public TimeSpan GetBreakTime() => this.totalBreakTime;
-
-        public bool IsProcessBreak(Process process)
+        else if (remainingBreakTime > TimeSpan.Zero)
         {
-            return !process.IsWork && this.remainingBreakTime > TimeSpan.Zero && this.remainingBreakTime >= process.Duration;
+            totalBreakTime += new TimeSpan(Math.Min(remainingBreakTime.Ticks, process.Duration.Ticks));
+            remainingBreakTime -= process.Duration;
         }
+    }
+
+    public TimeSpan GetBreakTime()
+    {
+        return totalBreakTime;
+    }
+
+    public bool IsProcessBreak(Process process)
+    {
+        return !process.IsWork && remainingBreakTime > TimeSpan.Zero && remainingBreakTime >= process.Duration;
     }
 }
