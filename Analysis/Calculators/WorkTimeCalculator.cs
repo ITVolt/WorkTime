@@ -20,7 +20,7 @@ internal class WorkTimeCalculator : TimeCalculator
 
     internal override FocusedOn GetCurrentFocus(Process currentProcess)
     {
-        return currentProcess.IsWork ? FocusedOn.Work : FocusedOn.Break;
+        return currentProcess.IsWork ? FocusedOn.Work : FocusedOn.NotWork;
     }
 
     internal override TimeSpan GetWorkTime()
