@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using WorkTime.Analysis.Calculators;
 using WorkTime.DataStorage;
-using WorkTime.WindowsEvents;
 
 namespace WorkTime.Analysis.Factory;
 
