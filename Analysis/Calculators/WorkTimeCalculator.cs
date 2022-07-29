@@ -1,30 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using WorkTime.Analysis.Counters;
 
 namespace WorkTime.Analysis.Calculators;
 
 internal class WorkTimeCalculator : TimeCalculator
 {
-    private WorkCounter workCounter;
+    private readonly WorkCounter workCounter;
 
-    internal override void SetupCounters(ProcessPublisher processPublisher)
+    public WorkTimeCalculator(IEnumerable<string> workProcesses) : base(workProcesses)
     {
-        workCounter = new WorkCounter();
-        workCounter.Subscribe(processPublisher);
+        this.workCounter = new WorkCounter();
     }
 
-    internal override void UnsubscribeCounters(ProcessPublisher processPublisher)
+    protected internal override void UpdateCounters(Process process)
     {
-        workCounter.Unsubscribe(processPublisher);
+        this.workCounter.AddProcess(process);
     }
 
-    internal override FocusedOn GetCurrentFocus(Process currentProcess)
+    protected internal override TimeSpan GetWorkTime()
     {
-        return currentProcess.IsWork ? FocusedOn.Work : FocusedOn.NotWork;
+        return this.workCounter.GetWorkTime();
     }
 
-    internal override TimeSpan GetWorkTime()
+    protected internal override FocusedOn GetFocus(bool currentFocusIsWork)
     {
-        return workCounter.GetWorkTime();
+        return currentFocusIsWork ? FocusedOn.Work : FocusedOn.NotWork;
     }
 }

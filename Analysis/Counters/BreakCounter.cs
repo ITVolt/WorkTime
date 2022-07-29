@@ -22,7 +22,7 @@ internal class BreakCounter : Counter
         remainingWorkBeforeBreak = workTimeBeforeBreak;
     }
 
-    public override void AddProcess(object _, Process process)
+    public override void AddProcess(Process process)
     {
         if (process.IsWork)
         {
@@ -33,20 +33,14 @@ internal class BreakCounter : Counter
                 remainingWorkBeforeBreak = workTimeBeforeBreak;
             }
         }
-        else if (remainingBreakTime > TimeSpan.Zero)
+        else if (HasRemainingBreakTime)
         {
             totalBreakTime += new TimeSpan(Math.Min(remainingBreakTime.Ticks, process.Duration.Ticks));
             remainingBreakTime -= process.Duration;
         }
     }
 
-    public TimeSpan GetBreakTime()
-    {
-        return totalBreakTime;
-    }
+    public bool HasRemainingBreakTime => remainingBreakTime >= TimeSpan.Zero;
 
-    public bool IsProcessBreak(Process process)
-    {
-        return !process.IsWork && remainingBreakTime > TimeSpan.Zero && remainingBreakTime >= process.Duration;
-    }
+    public TimeSpan GetBreakTime() => this.totalBreakTime;
 }

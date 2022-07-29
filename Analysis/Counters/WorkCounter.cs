@@ -12,13 +12,10 @@ internal class WorkCounter : Counter
         workTime = TimeSpan.Zero;
     }
 
-    public override void AddProcess(object _, Process process)
+    public override void AddProcess(Process process)
     {
         workTime += process.IsWork ? process.Duration : TimeSpan.Zero;
     }
 
-    public TimeSpan GetWorkTime()
-    {
-        return workTime;
-    }
+    public TimeSpan GetWorkTime() => this.workTime;
 }

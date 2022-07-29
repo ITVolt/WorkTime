@@ -60,11 +60,12 @@ namespace WorkTime
             SetupPassiveUpdate();
 
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
+            JsonHandler.Instance.SubscribeToSettingsChanged(OnSettingsChanged);
         }
 
         private void SetupTimeCalculator(){
             var settings = JsonHandler.Instance.GetSettings();
-            workTimeCalculator = TimeCalculatorFactory.CreateCalculator(settings);
+            workTimeCalculator = TimeCalculatorFactory.GetTimeCalculator(settings);
         }
 
         private void SetupPassiveUpdate()
@@ -76,15 +77,27 @@ namespace WorkTime
 
         private void OnWindowFocusChanged(object sender, FocusChangedEvent focusChangedEvent)
         {
-            currentDay.FocusChangedLogEntries.Add(new FocusChangedLogEntry(focusChangedEvent));
-            UpdateWorkTimeText();
+            var focusChangedLogEntry = new FocusChangedLogEntry(focusChangedEvent);
+            
+            currentDay.FocusChangedLogEntries.Add(focusChangedLogEntry);
+            this.workTimeCalculator.Update(focusChangedLogEntry);
 
+            UpdateWorkTimeText();
             UpdateLog(focusChangedEvent);
+        }
+        private void OnSettingsChanged(object sender, Settings newSettings)
+        {
+            this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
+                currentCalculator: this.workTimeCalculator,
+                settings: newSettings,
+                focusChanges: currentDay.FocusChangedLogEntries);
+
+            this.UpdateWorkTimeText();
         }
 
         private void UpdateWorkTimeText()
         {
-            var (workTimeToday, currentFocusingOn) = workTimeCalculator.CalculateWorkTimeOfDay(currentDay);
+            var (workTimeToday, currentFocusingOn) = workTimeCalculator.GetCurrentState();
             WorkTimeText = workTimeToday.ToString(@"h\:mm");
             UpdateBackground(currentFocusingOn);
         }

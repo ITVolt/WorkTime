@@ -1,56 +1,49 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using WorkTime.DataStorage;
 
 namespace WorkTime.Analysis.Calculators;
 
 internal abstract class TimeCalculator
 {
-    public (TimeSpan workTimeToday, FocusedOn focusedOn) CalculateWorkTimeOfDay(DayLogEntry day)
+    public DateTime CalculationStart;
+
+    private (DateTime time, bool wasWork) lastUpdate;
+
+    private readonly ISet<string> workProcesses;
+
+    protected TimeCalculator(IEnumerable<string> workProcesses)
     {
-        var processPublisher = new ProcessPublisher();
-
-        SetupCounters(processPublisher);
-
-        var focusChanges = day.FocusChangedLogEntries.OrderBy(x => x.Timestamp).ToList();
-
-        var firstProcess = focusChanges.First();
-
-        var lastProcessStart = firstProcess.Timestamp;
-        var lastProcessWasWork = ProcessCountAsWork(firstProcess.ProcessName);
-
-        foreach (var focusChange in focusChanges.Skip(1))
-        {
-            processPublisher.Update(new Process(focusChange.Timestamp - lastProcessStart, lastProcessWasWork));
-
-            lastProcessStart = focusChange.Timestamp;
-            lastProcessWasWork = ProcessCountAsWork(focusChange.ProcessName);
-        }
-
-        var lastProcess = new Process(DateTime.Now - lastProcessStart, lastProcessWasWork);
-
-        var currentFocus = GetCurrentFocus(lastProcess);
-
-        processPublisher.Update(lastProcess);
-
-        var workTime = GetWorkTime();
-
-        UnsubscribeCounters(processPublisher);
-
-        return (workTime, currentFocus);
+        this.workProcesses = new HashSet<string>(workProcesses);
     }
 
-    private static bool ProcessCountAsWork(string processName)
+    public void StartCalculation(DateTime startTime)
     {
-        var settings = JsonHandler.Instance.GetSettings();
-
-        return settings.WorkProcesses.Contains(processName);
+        CalculationStart = startTime;
+        this.lastUpdate = new(startTime, false);
     }
 
-    internal abstract FocusedOn GetCurrentFocus(Process currentProcess);
-    internal abstract TimeSpan GetWorkTime();
+    public void Update(FocusChangedLogEntry focusEntry)
+    {
+        UpdateCounters(new Process(focusEntry.Timestamp - this.lastUpdate.time, this.lastUpdate.wasWork));
+        this.lastUpdate = (focusEntry.Timestamp, ProcessCountAsWork(focusEntry.ProcessName));
+    }
 
-    internal abstract void SetupCounters(ProcessPublisher processPublisher);
+    public (TimeSpan workTimeToday, FocusedOn focusedOn) GetCurrentState()
+    {
+        var currentTime = DateTime.Now;
+        var currentFocusIsWork = lastUpdate.wasWork;
 
-    internal abstract void UnsubscribeCounters(ProcessPublisher processPublisher);
+        UpdateCounters(new Process(currentTime - lastUpdate.time, lastUpdate.wasWork));
+        this.lastUpdate = new(currentTime, currentFocusIsWork);
+
+        return (GetWorkTime(), GetFocus(currentFocusIsWork));
+    }
+    private bool ProcessCountAsWork(string processName) => workProcesses.Contains(processName);
+
+    protected internal abstract void UpdateCounters(Process process);
+
+    protected internal abstract TimeSpan GetWorkTime();
+
+    protected internal abstract FocusedOn GetFocus(bool currentFocusIsWork);
 }
