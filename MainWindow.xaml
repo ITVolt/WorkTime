@@ -31,11 +31,21 @@
                            TextTrimming="CharacterEllipsis"
                            d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
             </ScrollViewer>
-            <Button Name="CollapseButton"  Grid.Column="0" Grid.Row="1"
-                    Content="Collapse"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Left"
-                    Click="CollapseButton_OnClick"/>
+            <WrapPanel Grid.Column="0" Grid.Row="1">
+                <WrapPanel.Resources>
+                    <Style TargetType="{x:Type Button}">
+                        <Setter Property="Margin" Value="5,0" />
+                        <Setter Property="Padding" Value="3"></Setter>
+                    </Style>
+                </WrapPanel.Resources>
+                <Button Name="CollapseButton"
+                        Content="Collapse"
+                        Click="CollapseButton_OnClick"/>
+                <Button Name="ReloadSettingsButton"
+                        Content="Reload settings"
+                        Click="ReloadSettingsButton_OnClick"></Button>
+            </WrapPanel>
+            
         </Grid>
     </Grid>
 </Window>

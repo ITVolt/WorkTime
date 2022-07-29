@@ -60,7 +60,6 @@ namespace WorkTime
             SetupPassiveUpdate();
 
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
-            JsonHandler.Instance.SubscribeToSettingsChanged(OnSettingsChanged);
         }
 
         private void SetupTimeCalculator(){
@@ -85,7 +84,7 @@ namespace WorkTime
             UpdateWorkTimeText();
             UpdateLog(focusChangedEvent);
         }
-        private void OnSettingsChanged(object sender, Settings newSettings)
+        private void OnSettingsChanged(Settings newSettings)
         {
             this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
                 currentCalculator: this.workTimeCalculator,
@@ -139,5 +138,10 @@ namespace WorkTime
         }
 
         #endregion
+
+        private void ReloadSettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            OnSettingsChanged(JsonHandler.Instance.GetSettings());
+        }
     }
 }
