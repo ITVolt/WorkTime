@@ -2,15 +2,15 @@
 
 namespace WorkTime.Analysis.Calculators;
 
-public class Process
+public class FocusEntry
 {
     public TimeSpan Duration { get; }
     
-    public bool IsWork { get; }
+    public bool IsOnWork { get; }
     
-    public Process(TimeSpan duration, bool isWork)
+    public FocusEntry(TimeSpan duration, bool isOnWork)
     {
         Duration = duration;
-        IsWork = isWork;
+        IsOnWork = isOnWork;
     }
 }

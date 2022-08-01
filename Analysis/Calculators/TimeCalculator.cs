@@ -23,10 +23,10 @@ internal abstract class TimeCalculator
         this.lastUpdate = new(startTime, false);
     }
 
-    public void Update(FocusChangedLogEntry focusEntry)
+    public void Update(FocusChangedLogEntry focusChangeEntry)
     {
-        UpdateCounters(new Process(focusEntry.Timestamp - this.lastUpdate.time, this.lastUpdate.wasWork));
-        this.lastUpdate = (focusEntry.Timestamp, ProcessCountAsWork(focusEntry.ProcessName));
+        UpdateCounters(new FocusEntry(focusChangeEntry.Timestamp - this.lastUpdate.time, this.lastUpdate.wasWork));
+        this.lastUpdate = (focusChangeEntry.Timestamp, ProcessCountAsWork(focusChangeEntry.ProcessName));
     }
 
     public (TimeSpan workTimeToday, FocusedOn focusedOn) GetCurrentState()
@@ -34,14 +34,14 @@ internal abstract class TimeCalculator
         var currentTime = DateTime.Now;
         var currentFocusIsWork = lastUpdate.wasWork;
 
-        UpdateCounters(new Process(currentTime - lastUpdate.time, lastUpdate.wasWork));
+        UpdateCounters(new FocusEntry(currentTime - lastUpdate.time, lastUpdate.wasWork));
         this.lastUpdate = new(currentTime, currentFocusIsWork);
 
         return (GetWorkTime(), GetFocus(currentFocusIsWork));
     }
     private bool ProcessCountAsWork(string processName) => workProcesses.Contains(processName);
 
-    protected internal abstract void UpdateCounters(Process process);
+    protected internal abstract void UpdateCounters(FocusEntry focusEntry);
 
     protected internal abstract TimeSpan GetWorkTime();
 

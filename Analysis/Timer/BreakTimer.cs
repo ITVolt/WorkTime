@@ -1,9 +1,9 @@
 ﻿using System;
 using WorkTime.Analysis.Calculators;
 
-namespace WorkTime.Analysis.Counters;
+namespace WorkTime.Analysis.Timer;
 
-internal class BreakCounter : Counter
+internal class BreakTimer : Timer
 {
     private readonly TimeSpan breakTimeAllowedPerHour;
     private readonly TimeSpan workTimeBeforeBreak;
@@ -13,7 +13,7 @@ internal class BreakCounter : Counter
 
     private TimeSpan totalBreakTime;
 
-    public BreakCounter(TimeSpan breakTimeAllowedPerHour)
+    public BreakTimer(TimeSpan breakTimeAllowedPerHour)
     {
         this.breakTimeAllowedPerHour = breakTimeAllowedPerHour;
         workTimeBeforeBreak = TimeSpan.FromHours(1) - this.breakTimeAllowedPerHour;
@@ -22,11 +22,11 @@ internal class BreakCounter : Counter
         remainingWorkBeforeBreak = workTimeBeforeBreak;
     }
 
-    public override void AddProcess(Process process)
+    public override void AddEntry(FocusEntry focusEntry)
     {
-        if (process.IsWork)
+        if (focusEntry.IsOnWork)
         {
-            remainingWorkBeforeBreak -= process.Duration;
+            remainingWorkBeforeBreak -= focusEntry.Duration;
             if (remainingWorkBeforeBreak <= TimeSpan.Zero)
             {
                 remainingBreakTime = breakTimeAllowedPerHour;
@@ -35,8 +35,8 @@ internal class BreakCounter : Counter
         }
         else if (HasRemainingBreakTime)
         {
-            totalBreakTime += new TimeSpan(Math.Min(remainingBreakTime.Ticks, process.Duration.Ticks));
-            remainingBreakTime -= process.Duration;
+            totalBreakTime += new TimeSpan(Math.Min(remainingBreakTime.Ticks, focusEntry.Duration.Ticks));
+            remainingBreakTime -= focusEntry.Duration;
         }
     }
 
