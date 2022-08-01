@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.IO;
 using WorkTime.WindowsEvents;
 
@@ -16,7 +16,11 @@ namespace WorkTime.DataStorage
         {
             if (!File.Exists(settingsPath))
             {
-                var settings = new Settings {WorkProcesses = new List<string> {"mstsc", "Teams", "slack"}};
+                var settings = new Settings {
+                    WorkProcesses = new List<string> {"mstsc", "Teams", "slack"}, 
+                    NrbOfMinutesBreakPerHour = 0 
+                };
+                    
                 File.WriteAllText(settingsPath, JsonConvert.SerializeObject(settings, Formatting.Indented));
             }
         }

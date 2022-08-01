@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WorkTime.Analysis;
+using WorkTime.Analysis.Calculators;
+using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
 using WorkTime.WindowsEvents;
-using Brushes = System.Windows.Media.Brushes;
 using Point = System.Drawing.Point;
 
 namespace WorkTime
@@ -22,6 +24,8 @@ namespace WorkTime
         private readonly DispatcherTimer passiveUpdateTimer = new();
         private readonly TimeSpan passiveUpdateInterval = TimeSpan.FromMinutes(1);
         private readonly DayLogEntry currentDay = new(new List<FocusChangedLogEntry>());
+
+        private TimeCalculator workTimeCalculator;
 
         private string workTimeText;
         public string WorkTimeText
@@ -52,8 +56,15 @@ namespace WorkTime
         {
             InitializeComponent();
 
+            SetupTimeCalculator();
             SetupPassiveUpdate();
+
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
+        }
+
+        private void SetupTimeCalculator(){
+            var settings = JsonHandler.Instance.GetSettings();
+            workTimeCalculator = TimeCalculatorFactory.GetTimeCalculator(settings);
         }
 
         private void SetupPassiveUpdate()
@@ -65,17 +76,40 @@ namespace WorkTime
 
         private void OnWindowFocusChanged(object sender, FocusChangedEvent focusChangedEvent)
         {
-            currentDay.FocusChangedLogEntries.Add(new FocusChangedLogEntry(focusChangedEvent));
-            UpdateWorkTimeText();
+            var focusChangedLogEntry = new FocusChangedLogEntry(focusChangedEvent);
+            
+            currentDay.FocusChangedLogEntries.Add(focusChangedLogEntry);
+            this.workTimeCalculator.Update(focusChangedLogEntry);
 
+            UpdateWorkTimeText();
             UpdateLog(focusChangedEvent);
+        }
+        private void OnSettingsChanged(Settings newSettings)
+        {
+            this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
+                currentCalculator: this.workTimeCalculator,
+                settings: newSettings,
+                focusChanges: currentDay.FocusChangedLogEntries);
+
+            this.UpdateWorkTimeText();
         }
 
         private void UpdateWorkTimeText()
         {
-            var (workTimeToday, isCurrentlyWorking) = WorkTimeCalculator.CalculateWorkTimeOfDay(currentDay);
+            var (workTimeToday, currentFocusingOn) = workTimeCalculator.GetCurrentState();
             WorkTimeText = workTimeToday.ToString(@"h\:mm");
-            WorkTimeBackground = isCurrentlyWorking ? Brushes.ForestGreen : Brushes.Wheat;
+            UpdateBackground(currentFocusingOn);
+        }
+        
+        private void UpdateBackground(FocusedOn focusedOn)
+        {
+            WorkTimeBackground = focusedOn switch
+            {
+                FocusedOn.NotWork => Brushes.Wheat,
+                FocusedOn.Break => Brushes.CadetBlue,
+                FocusedOn.Work => Brushes.ForestGreen,
+                _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
+            };
         }
 
         private void UpdateLog(FocusChangedEvent focusChangedEvent)
@@ -89,7 +123,7 @@ namespace WorkTime
             Width = CollapsedWidth;
             Height = CollapsedHeight;
 
-            var currentScreen = System.Windows.Forms.Screen.FromPoint(new Point((int) Left, (int) Top));
+            var currentScreen = Screen.FromPoint(new Point((int) Left, (int) Top));
             Left = currentScreen.WorkingArea.Right - Width;
             Top = currentScreen.WorkingArea.Bottom - Height;
         }
@@ -104,5 +138,10 @@ namespace WorkTime
         }
 
         #endregion
+
+        private void ReloadSettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            OnSettingsChanged(JsonHandler.Instance.GetSettings());
+        }
     }
 }
