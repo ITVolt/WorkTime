@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using WorkTime.WindowsEvents;
@@ -28,6 +29,11 @@ namespace WorkTime.DataStorage
         public Settings GetSettings()
         {
             return JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsPath));
+        }
+
+        public void SaveSettings(Settings settings)
+        {
+            File.WriteAllText(settingsPath, JsonConvert.SerializeObject(settings, Formatting.Indented));
         }
 
         public void Log(FocusChangedEvent focusChangedEvent)

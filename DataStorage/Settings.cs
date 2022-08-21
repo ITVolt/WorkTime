@@ -2,10 +2,10 @@
 
 namespace WorkTime.DataStorage
 {
-    class Settings
+    public record Settings
     {
-        public IList<string> WorkProcesses { get; set; }
+        public IList<string> WorkProcesses { get; init; }
 
-        public int NrbOfMinutesBreakPerHour { get; set; }
+        public int NrbOfMinutesBreakPerHour { get; init; }
     }
 }

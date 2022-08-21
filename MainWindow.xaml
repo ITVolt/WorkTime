@@ -4,7 +4,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WorkTime"
+        xmlns:viewmodels="clr-namespace:WorkTime.ViewModels" 
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:views="clr-namespace:WorkTime.Views"
         mc:Ignorable="d"
         Title="Work Time" Height="450" Width="600" MinHeight="{Binding Path=CollapsedHeight}" MinWidth="{Binding Path=CollapsedWidth}">
     <Grid>
@@ -17,35 +19,39 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-
-            <Viewbox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" >
-                <TextBlock Name="WorkTimeTextBlock"
-                           Text="{Binding Path=WorkTimeText}" d:Text="5:38"
-                           Background="{Binding Path=WorkTimeBackground}" d:Background="Wheat">
-                </TextBlock>
-            </Viewbox>
-            <ScrollViewer Name="LogScrollViewer" Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Grid.Column="0" 
+                    Grid.ColumnSpan="2" 
+                    Grid.Row="0" 
+                    BorderBrush="LightSlateGray" 
+                    BorderThickness="0 0 0 1"
+                    Background="{Binding Path=WorkTimeBackground}" d:Background="Wheat">
+                <Viewbox>
+                    <TextBlock Name="WorkTimeTextBlock"
+                               Text="{Binding Path=WorkTimeText}" d:Text="5:38">
+                    </TextBlock>
+                </Viewbox>
+            </Border>
+            <Border BorderBrush="LightSlateGray" BorderThickness="0 0 1 0" Grid.Column="0" Grid.Row="1" Margin="0 0 5 0" Padding="0 0 5 0">
+                <StackPanel>
+                    <views:Settings DataContext="{Binding SettingsViewModel}">
+                    </views:Settings>
+                    <Button Name="CollapseButton"
+                            Padding="2"
+                            Margin="5 5 0 0"
+                            HorizontalAlignment="Left"
+                            Content="Collapse"
+                            Click="CollapseButton_OnClick"/>
+                </StackPanel>
+            </Border>
+            <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="0 0 5 0" Name="LogScrollViewer" VerticalScrollBarVisibility="Auto">
                 <TextBlock Name="LogTextBlock"
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           TextTrimming="CharacterEllipsis"
-                           d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
+                        Text="{Binding Path=LogText, NotifyOnTargetUpdated=True}"
+                        TargetUpdated="OnLogTextUpdate"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        TextTrimming="CharacterEllipsis"
+                        d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
             </ScrollViewer>
-            <WrapPanel Grid.Column="0" Grid.Row="1">
-                <WrapPanel.Resources>
-                    <Style TargetType="{x:Type Button}">
-                        <Setter Property="Margin" Value="5,0" />
-                        <Setter Property="Padding" Value="3"></Setter>
-                    </Style>
-                </WrapPanel.Resources>
-                <Button Name="CollapseButton"
-                        Content="Collapse"
-                        Click="CollapseButton_OnClick"/>
-                <Button Name="ReloadSettingsButton"
-                        Content="Reload settings"
-                        Click="ReloadSettingsButton_OnClick"></Button>
-            </WrapPanel>
-            
         </Grid>
     </Grid>
 </Window>
