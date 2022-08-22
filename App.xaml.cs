@@ -21,8 +21,6 @@ namespace WorkTime
             var settingsViewModel = new SettingsViewModel(settingsProvider);
             var mainViewModel = new MainViewModel(settingsProvider, settingsViewModel);
 
-
-
             var mainWindow = new MainWindow() { DataContext = mainViewModel };
 
             mainWindow.Show();

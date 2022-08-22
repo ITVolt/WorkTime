@@ -107,13 +107,13 @@ namespace WorkTime.ViewModels
             UpdateBackground(currentFocusingOn);
         }
 
-        private void UpdateBackground(FocusedOn focusedOn)
+        private void UpdateBackground(Focus focusedOn)
         {
             WorkTimeBackground = focusedOn switch
             {
-                FocusedOn.NotWork => Brushes.Wheat,
-                FocusedOn.Break => Brushes.CadetBlue,
-                FocusedOn.Work => Brushes.ForestGreen,
+                Focus.NotWork => Brushes.Wheat,
+                Focus.Break => Brushes.CadetBlue,
+                Focus.Work => Brushes.ForestGreen,
                 _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
             };
         }

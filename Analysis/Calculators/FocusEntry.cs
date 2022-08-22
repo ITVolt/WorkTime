@@ -2,11 +2,11 @@
 
 namespace WorkTime.Analysis.Calculators;
 
-public class FocusEntry
+public record FocusEntry
 {
-    public TimeSpan Duration { get; }
+    public TimeSpan Duration { get; init; }
     
-    public bool IsOnWork { get; }
+    public bool IsOnWork { get; init; }
     
     public FocusEntry(TimeSpan duration, bool isOnWork)
     {

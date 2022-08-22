@@ -93,7 +93,6 @@ namespace WorkTime.ViewModels
             OnSettingsChanged(settingsProvider.GetSettings());
             settingsProvider.OnSettingsChange += OnSettingsChanged;
 
-
             SettingsSaveCommand = new Command(OnSettingsSaved);
 
             (WorkProcessesErrorVisbility, WorkProcessesErrorMessage) = (Visibility.Collapsed, "");
@@ -144,9 +143,8 @@ namespace WorkTime.ViewModels
 
         private static (bool isValid, string ErrorMessage) ValidateNbrOfMinutesInput(string userInput)
         {
-            int result;
-            var isValid = int.TryParse(userInput, out result);
-            
+            var isValid = int.TryParse(userInput, out int result);
+
             if (!isValid)
             {
                 return (false, "Must be a digit between 0 and 60");
@@ -168,9 +166,7 @@ namespace WorkTime.ViewModels
         private static IList<string> GetWorkProcessFromString(string input)
         {
             var inputWithNoNewLines = input.Replace("\n", "").Replace("\r", "");
-            var inputWithNoEmptystrings = inputWithNoNewLines.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var intputTrimmed = inputWithNoEmptystrings.Select(x => x.Trim(' '));
-            return intputTrimmed.ToList();
+            return inputWithNoNewLines.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
         }
 
         public override void Dispose()

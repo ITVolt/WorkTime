@@ -23,11 +23,11 @@ internal class WorkWithBreakCalculator : TimeCalculator
 
     protected internal override TimeSpan GetWorkTime() => workTimer.GetWorkTime() + this.breakTimer.GetBreakTime();
 
-    protected internal override FocusedOn GetFocus(bool currentFocusIsWork)
+    protected internal override Focus GetFocus(bool currentFocusIsWork)
     {
         return currentFocusIsWork
-            ? FocusedOn.Work
-            : this.breakTimer.HasRemainingBreakTime ? FocusedOn.Break : FocusedOn.NotWork;
+            ? Focus.Work
+            : this.breakTimer.HasRemainingBreakTime ? Focus.Break : Focus.NotWork;
     }
     
 }
