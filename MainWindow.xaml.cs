@@ -10,6 +10,7 @@ using WorkTime.Analysis;
 using WorkTime.Analysis.Calculators;
 using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
+using WorkTime.Properties;
 using WorkTime.WindowsEvents;
 using Point = System.Drawing.Point;
 
@@ -56,15 +57,31 @@ namespace WorkTime
         {
             InitializeComponent();
 
+            RestoreWindowPosition();
             SetupTimeCalculator();
             SetupPassiveUpdate();
 
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
         }
 
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            UserSettings.Default.LastPosition = new System.Windows.Point(x: Left, y: Top);
+            UserSettings.Default.LastSize = new Size(width: Width, height: Height);
+
+            base.OnClosing(e);
+        }
+
+        private void RestoreWindowPosition()
+        {
+            Width = UserSettings.Default.LastSize.Width;
+            Height = UserSettings.Default.LastSize.Height;
+            Left = UserSettings.Default.LastPosition.X;
+            Top = UserSettings.Default.LastPosition.Y;
+        }
+
         private void SetupTimeCalculator(){
-            var settings = JsonHandler.Instance.GetSettings();
-            workTimeCalculator = TimeCalculatorFactory.GetTimeCalculator(settings);
+            workTimeCalculator = TimeCalculatorFactory.GetTimeCalculator(UserSettings.Default);
         }
 
         private void SetupPassiveUpdate()
@@ -79,19 +96,20 @@ namespace WorkTime
             var focusChangedLogEntry = new FocusChangedLogEntry(focusChangedEvent);
             
             currentDay.FocusChangedLogEntries.Add(focusChangedLogEntry);
-            this.workTimeCalculator.Update(focusChangedLogEntry);
+            workTimeCalculator.Update(focusChangedLogEntry);
 
             UpdateWorkTimeText();
             UpdateLog(focusChangedEvent);
         }
-        private void OnSettingsChanged(Settings newSettings)
+
+        private void OnSettingsChanged(UserSettings newSettings)
         {
-            this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
-                currentCalculator: this.workTimeCalculator,
+            workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
+                currentCalculator: workTimeCalculator,
                 settings: newSettings,
                 focusChanges: currentDay.FocusChangedLogEntries);
 
-            this.UpdateWorkTimeText();
+            UpdateWorkTimeText();
         }
 
         private void UpdateWorkTimeText()
@@ -128,6 +146,11 @@ namespace WorkTime
             Top = currentScreen.WorkingArea.Bottom - Height;
         }
 
+        private void ReloadSettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            OnSettingsChanged(UserSettings.Default);
+        }
+
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -138,10 +161,5 @@ namespace WorkTime
         }
 
         #endregion
-
-        private void ReloadSettingsButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            OnSettingsChanged(JsonHandler.Instance.GetSettings());
-        }
     }
 }
