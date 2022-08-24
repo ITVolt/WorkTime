@@ -8,11 +8,6 @@ namespace WorkTime.Properties
 
         public Size LastSize { get; init; }
 
-        public void Deconstruct(out Point lastPoint, out Size lastSize)
-        {
-            lastPoint = LastPosition;
-            lastSize = LastSize;
-        }
-
+        public bool LastWasCollapsed { get; init; }
     }
 }

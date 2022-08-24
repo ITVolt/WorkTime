@@ -15,10 +15,11 @@
         public WindowSettingsProvider(UserSettings userSettings)
         {
             this.storedUserSettings = userSettings;
-            settings = new WindowSettingsDTO() 
-            { 
-                LastPosition = userSettings.LastPosition, 
-                LastSize = userSettings.LastSize 
+            settings = new WindowSettingsDTO()
+            {
+                LastPosition = userSettings.LastPosition,
+                LastSize = userSettings.LastSize,
+                LastWasCollapsed = userSettings.LastCollapsed
             };
         }
 
@@ -29,6 +30,7 @@
             this.settings = settings;
             storedUserSettings.LastPosition = settings.LastPosition;
             storedUserSettings.LastSize = settings.LastSize;
+            storedUserSettings.LastCollapsed = settings.LastWasCollapsed;
         }
     }
 }

@@ -14,11 +14,11 @@ namespace WorkTime.ViewModels
 {
     internal class MainViewModel : ViewModelBase
     {
-        private readonly TimerSettingsProvider timerSettingsProvider;
+        private readonly ITimerSettingsProvider timerSettingsProvider;
         private readonly IWindowSettingsProvider windowSettingsProvider;
+        private readonly WindowFocusChangedProvider windowFocusChangedProvider;
         public SettingsViewModel SettingsViewModel { get; }
 
-        private readonly WindowFocusChangedProvider windowFocusChangedProvider = new();
         private readonly DispatcherTimer passiveUpdateTimer = new();
         private readonly TimeSpan passiveUpdateInterval = TimeSpan.FromMinutes(1);
         private readonly DayLogEntry currentDay = new(new List<FocusChangedLogEntry>());
@@ -31,6 +31,30 @@ namespace WorkTime.ViewModels
             set
             {
                 workTimeText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string focusedOnTitle;
+
+        public string FocusedOnTitle
+        {
+            get => focusedOnTitle;
+            set
+            {
+                focusedOnTitle = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private SolidColorBrush workTimeTextColor;
+
+        public SolidColorBrush WorkTimeTextColor
+        {
+            get => workTimeTextColor;
+            set 
+            {
+                workTimeTextColor = value;
                 OnPropertyChanged();
             }
         }
@@ -57,34 +81,63 @@ namespace WorkTime.ViewModels
             }
         }
 
-        public Func<(Point, Size)> RestoreToPoint;
+        private bool isCollapsed { get; set; }
+        public bool IsCollapsed { 
+            get => isCollapsed; 
+            set
+            {
+                isCollapsed = value;
+                OnPropertyChanged();
+            }
+        }
 
-        public Command<Point, Size> SaveLastPositionAndSize;
+        public Command OnCollapseCommand { get; init; }
 
-        public MainViewModel(TimerSettingsProvider settingsProvider, WindowSettingsProvider windowSettingsProvider, SettingsViewModel settingsViewModel)
+        public Command OnExpandCommand { get; init; }
+
+        public Command<WindowSettingsDTO> SaveLastPositionAndSize { get; }
+
+        public MainViewModel(
+            ITimerSettingsProvider settingsProvider, 
+            IWindowSettingsProvider windowSettingsProvider,
+            WindowFocusChangedProvider windowFocusChangedProvider,
+            SettingsViewModel settingsViewModel)
         {
             this.timerSettingsProvider = settingsProvider;
             SetupTimeCalculator(settingsProvider.GetSettings());
-            
+
             this.windowSettingsProvider = windowSettingsProvider;
-            this.RestoreToPoint = GetLastPositionAndPoint;
-            SaveLastPositionAndSize = new Command<Point, Size>(StoreLastPositionAndPoint);
-            
+            SaveLastPositionAndSize = new Command<WindowSettingsDTO>(StoreLastPositionAndPoint);
+
+            this.windowFocusChangedProvider = windowFocusChangedProvider;
+
+            isCollapsed = windowSettingsProvider.GetSettings().LastWasCollapsed;
+            OnCollapseCommand = new Command(OnCollapse);
+            OnExpandCommand = new Command(OnExpand);
+
             SettingsViewModel = settingsViewModel;
 
+            SetupTimeCalculator(settingsProvider.GetSettings());
             SetupPassiveUpdate();
+
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
             settingsProvider.OnSettingsChange += OnSettingsChanged;
         }
 
-        public (Point lastPoint, Size lastSize) GetLastPositionAndPoint() {
-            var windowSettings = this.windowSettingsProvider.GetSettings();
-            return (windowSettings.LastPosition, windowSettings.LastSize);
+        public WindowSettingsDTO GetLastPositionAndPoint() => this.windowSettingsProvider.GetSettings();
+
+        private void OnCollapse()
+        {
+            this.IsCollapsed = true;
         }
 
+        private void OnExpand()
+        {
+            this.IsCollapsed = false;
+        }
 
-        public void StoreLastPositionAndPoint(Point point, Size size) { 
-            this.windowSettingsProvider.SaveSettings(new WindowSettingsDTO() { LastPosition = point, LastSize = size });
+        public void StoreLastPositionAndPoint(WindowSettingsDTO newSettings) {
+            this.windowSettingsProvider.SaveSettings(newSettings with { LastWasCollapsed = isCollapsed });
         }
         private void SetupTimeCalculator(TimerSettingsDTO settings)
         {
@@ -123,16 +176,16 @@ namespace WorkTime.ViewModels
         {
             var (workTimeToday, currentFocusingOn) = workTimeCalculator.GetCurrentState();
             WorkTimeText = workTimeToday.ToString(@"h\:mm");
-            UpdateBackground(currentFocusingOn);
+            (FocusedOnTitle, WorkTimeTextColor, WorkTimeBackground) = GetFocusTagProperties(currentFocusingOn);
         }
 
-        private void UpdateBackground(Focus focusedOn)
+        private static (string Title, SolidColorBrush TextColor, SolidColorBrush BackgroundColor) GetFocusTagProperties(Focus focusedOn)
         {
-            WorkTimeBackground = focusedOn switch
+            return focusedOn switch
             {
-                Focus.NotWork => Brushes.Wheat,
-                Focus.Break => Brushes.CadetBlue,
-                Focus.Work => Brushes.ForestGreen,
+                Focus.NotWork => ("Idle", Brushes.Black, Brushes.Wheat),
+                Focus.Work => ("Work", Brushes.White, Brushes.ForestGreen),
+                Focus.Break => ("Break", Brushes.White, Brushes.CadetBlue),
                 _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
             };
         }
@@ -144,6 +197,7 @@ namespace WorkTime.ViewModels
 
         public override void Dispose()
         {
+            windowFocusChangedProvider.WindowFocusChanged -= OnWindowFocusChanged;
             timerSettingsProvider.OnSettingsChange -= OnSettingsChanged;
         }
     }

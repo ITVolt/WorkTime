@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using WorkTime.Properties;
 using WorkTime.ViewModels;
 
 namespace WorkTime
@@ -10,48 +11,106 @@ namespace WorkTime
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static double CollapsedWidth => 140;
-        public static double CollapsedHeight => 110;
+        public static double CollapsedWidth => 120;
+        public static double CollapsedHeight => 90;
 
-        private Action<Point, Size> storeLastPositionAndPoint;
+        private Size lastSize;
+
+        private Point lastPoint;
+
+        private Command<WindowSettingsDTO> storeLastPositionAndPoint;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContextChanged += OnDataContextChanged;
+            lastSize = new Size(0, 0);
+            lastPoint = new Point(0, 0);
         }
 
         public void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {            
-            if(DataContext is MainViewModel mainViewModel)
+        {
+            if (DataContext is MainViewModel mainViewModel)
             {
                 RestoreWindowPosition(mainViewModel.GetLastPositionAndPoint());
-                storeLastPositionAndPoint = mainViewModel.StoreLastPositionAndPoint;
+                storeLastPositionAndPoint = mainViewModel.SaveLastPositionAndSize;
+                mainViewModel.PropertyChanged += OnCollapsedChanged;
             }
         }
 
-        private void RestoreWindowPosition((Point lastPoint, Size lastSize) value)
+        private void RestoreWindowPosition(WindowSettingsDTO windowSettings)
         {
-            Width = value.lastSize.Width;
-            Height = value.lastSize.Height;
-            Left = value.lastPoint.X;
-            Top = value.lastPoint.Y;
+            lastSize = new Size(width: windowSettings.LastSize.Width, height: windowSettings.LastSize.Height);
+            lastPoint = new Point(windowSettings.LastPosition.X, windowSettings.LastPosition.Y);
+
+            if (windowSettings.LastWasCollapsed)
+            {
+                CollapseView();
+            }
+            else
+            {
+                RestoreView(lastSize, lastPoint);
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
-            this.storeLastPositionAndPoint?.Invoke(new Point(x: Left, y: Top), new Size(width: Width, height: Height));
+            if (DataContext is MainViewModel mainViewModel)
+            {
+                mainViewModel.PropertyChanged -= OnCollapsedChanged;
+            }
+
+            this.storeLastPositionAndPoint?.Execute(new WindowSettingsDTO()
+            {
+                LastPosition = lastPoint,
+                LastSize = lastSize
+            });
             base.OnClosing(e);
         }
 
-        private void CollapseButton_OnClick(object sender, RoutedEventArgs e)
+        private void OnCollapsedChanged(object _, PropertyChangedEventArgs eventArgs)
         {
+            if(eventArgs.PropertyName != nameof(MainViewModel.IsCollapsed) || DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            if (viewModel.IsCollapsed)
+            {
+                lastSize = new Size(width: Width, height: Height);
+                lastPoint = new Point(x: Left, y: Top);
+
+                CollapseView();
+            }
+            else
+            {
+                RestoreView(lastSize, lastPoint);
+            }
+        }
+
+        private void CollapseView()
+        {
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+
             Width = CollapsedWidth;
             Height = CollapsedHeight;
 
             var workingArea = SystemParameters.WorkArea;
             Left = workingArea.Right - Width;
             Top = workingArea.Bottom - Height;
+        }
+
+        private void RestoreView(Size lastSize, Point lastPosition)
+        {
+            WindowStyle = WindowStyle.ThreeDBorderWindow;
+            ResizeMode = ResizeMode.CanResizeWithGrip;
+
+            Height = lastSize.Height;
+            Width = lastSize.Width;
+
+            Left = lastPosition.X;
+            Top = lastPosition.Y;
         }
 
         private void OnLogTextUpdate(object _, EventArgs __)

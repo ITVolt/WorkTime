@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,17 +17,20 @@ namespace WorkTime.WindowsEvents
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable - If it is only local it will get garbage collected and crash the program
         private readonly WinEventDelegate winEventDelegate;
 
-        public WindowFocusChangedProvider()
+        private readonly IList<string> ignoredProcesses;
+
+        public WindowFocusChangedProvider(IList<string> processesToIgnore)
         {
             winEventDelegate = WinEventProc;
             SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, this.winEventDelegate, 0, 0, WindowEventOutOfContext);
+            this.ignoredProcesses = processesToIgnore;
         }
 
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
             var focusChangeEvent = GetActiveWindowInfo();
 
-            if (UserSettings.Default.IgnoredProcesses.Contains(focusChangeEvent.ProcessName + focusChangeEvent.WindowTitle))
+            if (ignoredProcesses.Contains(focusChangeEvent.ProcessName + focusChangeEvent.WindowTitle))
             {
                 // If a process is ignored we don't log the switch at all.
                 // Needed for "explorer" with no title since it could get focus during a notification or alt-tab

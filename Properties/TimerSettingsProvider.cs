@@ -5,7 +5,7 @@ namespace WorkTime.Properties
 {
     public interface ITimerSettingsProvider
     {
-        Action<TimerSettingsDTO> OnSettingsChange { get; }
+        Action<TimerSettingsDTO> OnSettingsChange { get; set; }
 
         public void UpdateSettings(TimerSettingsDTO settings);
 
@@ -19,9 +19,12 @@ namespace WorkTime.Properties
 
         private TimerSettingsDTO _timerSettings;
 
-        public Action<TimerSettingsDTO> OnSettingsChange;
+        Action<TimerSettingsDTO> OnSettingsChange;
 
-        Action<TimerSettingsDTO> ITimerSettingsProvider.OnSettingsChange => OnSettingsChange;
+        Action<TimerSettingsDTO> ITimerSettingsProvider.OnSettingsChange {
+            get => OnSettingsChange;
+            set => OnSettingsChange = value; 
+        }
 
         public TimerSettingsProvider(UserSettings settings)
         {

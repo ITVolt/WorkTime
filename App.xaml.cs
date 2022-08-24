@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using WorkTime.Properties;
 using WorkTime.ViewModels;
+using WorkTime.WindowsEvents;
 using TimerSettingsProvider = WorkTime.Properties.TimerSettingsProvider;
 
 namespace WorkTime
@@ -16,10 +17,11 @@ namespace WorkTime
 
             var settingsProvider = new TimerSettingsProvider(UserSettings.Default);
             var windowSettingsProvider = new WindowSettingsProvider(UserSettings.Default);
+            var windowFocusChangedProvider = new WindowFocusChangedProvider(UserSettings.Default.IgnoredProcesses);
             UserSettings.Default.PropertyChanged += (_, _) => UserSettings.Default.Save();
 
             var settingsViewModel = new SettingsViewModel(settingsProvider);
-            var mainViewModel = new MainViewModel(settingsProvider, windowSettingsProvider, settingsViewModel);
+            var mainViewModel = new MainViewModel(settingsProvider, windowSettingsProvider, windowFocusChangedProvider, settingsViewModel);
 
             var mainWindow = new MainWindow() { DataContext = mainViewModel };
 

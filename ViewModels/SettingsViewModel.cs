@@ -8,7 +8,7 @@ namespace WorkTime.ViewModels
 {
     internal class SettingsViewModel : ViewModelBase
     {
-        private readonly TimerSettingsProvider settingsProvider;
+        private readonly ITimerSettingsProvider settingsProvider;
 
         private string workProcesses;
 
@@ -85,7 +85,7 @@ namespace WorkTime.ViewModels
 
         public Command SettingsSaveCommand { get; init; }
 
-        public SettingsViewModel(TimerSettingsProvider settingsProvider)
+        public SettingsViewModel(ITimerSettingsProvider settingsProvider)
         {
             this.settingsProvider = settingsProvider;
             OnSettingsChanged(settingsProvider.GetSettings());
@@ -144,7 +144,7 @@ namespace WorkTime.ViewModels
 
             if (!isValid)
             {
-                return (false, "Must be a digit between 0 and 60");
+                return (false, "Must be a digit between 0 and 59");
             }
 
             if(result < 0 || result > 59){
