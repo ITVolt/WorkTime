@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 using WorkTime.Analysis;
 using WorkTime.Analysis.Calculators;
 using WorkTime.Analysis.Factory;
 using WorkTime.DataStorage;
+using WorkTime.Properties;
 using WorkTime.WindowsEvents;
 
 namespace WorkTime.ViewModels
 {
     internal class MainViewModel : ViewModelBase
     {
-        private readonly SettingsProvider settingsProvider;
+        private readonly TimerSettingsProvider timerSettingsProvider;
+        private readonly IWindowSettingsProvider windowSettingsProvider;
         public SettingsViewModel SettingsViewModel { get; }
 
         private readonly WindowFocusChangedProvider windowFocusChangedProvider = new();
@@ -54,10 +57,18 @@ namespace WorkTime.ViewModels
             }
         }
 
-        public MainViewModel(SettingsProvider settingsProvider, SettingsViewModel settingsViewModel)
+        public Func<(Point, Size)> RestoreToPoint;
+
+        public Command<Point, Size> SaveLastPositionAndSize;
+
+        public MainViewModel(TimerSettingsProvider settingsProvider, WindowSettingsProvider windowSettingsProvider, SettingsViewModel settingsViewModel)
         {
-            this.settingsProvider = settingsProvider;
+            this.timerSettingsProvider = settingsProvider;
             SetupTimeCalculator(settingsProvider.GetSettings());
+            
+            this.windowSettingsProvider = windowSettingsProvider;
+            this.RestoreToPoint = GetLastPositionAndPoint;
+            SaveLastPositionAndSize = new Command<Point, Size>(StoreLastPositionAndPoint);
             
             SettingsViewModel = settingsViewModel;
 
@@ -66,8 +77,16 @@ namespace WorkTime.ViewModels
             settingsProvider.OnSettingsChange += OnSettingsChanged;
         }
 
+        public (Point lastPoint, Size lastSize) GetLastPositionAndPoint() {
+            var windowSettings = this.windowSettingsProvider.GetSettings();
+            return (windowSettings.LastPosition, windowSettings.LastSize);
+        }
 
-        private void SetupTimeCalculator(Settings settings)
+
+        public void StoreLastPositionAndPoint(Point point, Size size) { 
+            this.windowSettingsProvider.SaveSettings(new WindowSettingsDTO() { LastPosition = point, LastSize = size });
+        }
+        private void SetupTimeCalculator(TimerSettingsDTO settings)
         {
             workTimeCalculator = TimeCalculatorFactory.GetTimeCalculator(settings);
         }
@@ -90,7 +109,7 @@ namespace WorkTime.ViewModels
             UpdateLog(focusChangedEvent);
         }
 
-        private void OnSettingsChanged(Settings newSettings)
+        private void OnSettingsChanged(TimerSettingsDTO newSettings)
         {
             this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
                 currentCalculator: this.workTimeCalculator,
@@ -125,7 +144,7 @@ namespace WorkTime.ViewModels
 
         public override void Dispose()
         {
-            settingsProvider.OnSettingsChange -= OnSettingsChanged;
+            timerSettingsProvider.OnSettingsChange -= OnSettingsChanged;
         }
     }
 }

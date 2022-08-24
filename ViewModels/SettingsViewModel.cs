@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using WorkTime.DataStorage;
-using WorkTimeSettings = WorkTime.DataStorage.Settings;
+using WorkTime.Properties;
 
 namespace WorkTime.ViewModels
 {
     internal class SettingsViewModel : ViewModelBase
     {
-        private readonly SettingsProvider settingsProvider;
-        private Settings settings;
+        private readonly TimerSettingsProvider settingsProvider;
 
         private string workProcesses;
 
@@ -87,7 +85,7 @@ namespace WorkTime.ViewModels
 
         public Command SettingsSaveCommand { get; init; }
 
-        public SettingsViewModel(SettingsProvider settingsProvider)
+        public SettingsViewModel(TimerSettingsProvider settingsProvider)
         {
             this.settingsProvider = settingsProvider;
             OnSettingsChanged(settingsProvider.GetSettings());
@@ -100,10 +98,9 @@ namespace WorkTime.ViewModels
 
         }
 
-        private void OnSettingsChanged(Settings newSettings)
+        private void OnSettingsChanged(TimerSettingsDTO newSettings)
         {
-            settings = newSettings;
-            WorkProcesses = FormatWorkProcesses(settings);
+            WorkProcesses = FormatWorkProcesses(newSettings);
             NbrOfMinutesBreak = newSettings.NrbOfMinutesBreakPerHour.ToString();
         }
 
@@ -127,7 +124,7 @@ namespace WorkTime.ViewModels
                 (WorkProcessesErrorVisbility, WorkProcessesErrorMessage) = (Visibility.Collapsed, "");
                 (NbrOfMinutesErrorVisibility, NbrOfMinutesErrorMessage) = (Visibility.Collapsed, "");
 
-                settingsProvider.UpdateSettings(new Settings()
+                settingsProvider.UpdateSettings(new TimerSettingsDTO()
                 {
                     WorkProcesses = GetWorkProcessFromString(this.WorkProcesses),
                     NrbOfMinutesBreakPerHour = int.Parse(this.NbrOfMinutesBreak)
@@ -150,15 +147,15 @@ namespace WorkTime.ViewModels
                 return (false, "Must be a digit between 0 and 60");
             }
 
-            if(result < 0 || result > 60){
-                return (false, "Must be between 0 and 60");
+            if(result < 0 || result > 59){
+                return (false, "Must be between 0 and 59");
             }
 
 
             return (true, "");
         }
 
-        public static string FormatWorkProcesses(WorkTimeSettings settings)
+        public static string FormatWorkProcesses(TimerSettingsDTO settings)
         {
             return string.Join(",", settings.WorkProcesses);
         }

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using WorkTime.Analysis.Calculators;
 using WorkTime.DataStorage;
+using WorkTime.Properties;
 
 namespace WorkTime.Analysis.Factory;
 
 internal class TimeCalculatorFactory
 {
-    public static TimeCalculator GetTimeCalculator(Settings settings)
+    public static TimeCalculator GetTimeCalculator(TimerSettingsDTO settings)
     {
         var timeCalculator = CreateCalculator(settings);
 
@@ -17,7 +18,7 @@ internal class TimeCalculatorFactory
         return timeCalculator;
     }
 
-    public static TimeCalculator UpdateTimeCalculatorWithNewSettings(TimeCalculator currentCalculator, Settings settings, IList<FocusChangedLogEntry> focusChanges)
+    public static TimeCalculator UpdateTimeCalculatorWithNewSettings(TimeCalculator currentCalculator, TimerSettingsDTO settings, IList<FocusChangedLogEntry> focusChanges)
     {
         var newCalculator = CreateCalculator(settings);
 
@@ -33,7 +34,7 @@ internal class TimeCalculatorFactory
         return newCalculator;
     }
 
-    private static TimeCalculator CreateCalculator(Settings settings)
+    private static TimeCalculator CreateCalculator(TimerSettingsDTO settings)
     {
         if (settings.NrbOfMinutesBreakPerHour is > 0 and < 60){
             return new WorkWithBreakCalculator(settings.WorkProcesses, TimeSpan.FromMinutes(settings.NrbOfMinutesBreakPerHour));

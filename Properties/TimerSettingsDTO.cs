@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace WorkTime.DataStorage
+namespace WorkTime.Properties
 {
-    public record Settings
+    public sealed record TimerSettingsDTO
     {
         public IList<string> WorkProcesses { get; init; }
-
         public int NrbOfMinutesBreakPerHour { get; init; }
     }
 }

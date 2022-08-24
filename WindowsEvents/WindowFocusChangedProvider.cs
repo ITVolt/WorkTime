@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using WorkTime.Properties;
 
 namespace WorkTime.WindowsEvents
 {
@@ -24,6 +25,14 @@ namespace WorkTime.WindowsEvents
         public void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime)
         {
             var focusChangeEvent = GetActiveWindowInfo();
+
+            if (UserSettings.Default.IgnoredProcesses.Contains(focusChangeEvent.ProcessName + focusChangeEvent.WindowTitle))
+            {
+                // If a process is ignored we don't log the switch at all.
+                // Needed for "explorer" with no title since it could get focus during a notification or alt-tab
+                // and not switch over again until next focus change.
+                return;
+            }
 
             WindowFocusChanged?.Invoke(this, focusChangeEvent);
         }

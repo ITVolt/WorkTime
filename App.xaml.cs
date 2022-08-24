@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using WorkTime.DataStorage;
+using WorkTime.Properties;
 using WorkTime.ViewModels;
-using SettingsProvider = WorkTime.DataStorage.SettingsProvider;
+using TimerSettingsProvider = WorkTime.Properties.TimerSettingsProvider;
 
 namespace WorkTime
 {
@@ -10,27 +10,20 @@ namespace WorkTime
     /// </summary>
     public partial class App : Application
     {
-        private SettingsProvider settingsProvider;
-
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-            var loadedSettings = JsonHandler.Instance.GetSettings();
 
-            this.settingsProvider = new SettingsProvider(loadedSettings);
+            var settingsProvider = new TimerSettingsProvider(UserSettings.Default);
+            var windowSettingsProvider = new WindowSettingsProvider(UserSettings.Default);
+            UserSettings.Default.PropertyChanged += (_, _) => UserSettings.Default.Save();
+
             var settingsViewModel = new SettingsViewModel(settingsProvider);
-            var mainViewModel = new MainViewModel(settingsProvider, settingsViewModel);
+            var mainViewModel = new MainViewModel(settingsProvider, windowSettingsProvider, settingsViewModel);
 
             var mainWindow = new MainWindow() { DataContext = mainViewModel };
 
             mainWindow.Show();
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            base.OnExit(e);
-
-            JsonHandler.Instance.SaveSettings(this.settingsProvider.GetSettings());
         }
     }
 }

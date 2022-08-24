@@ -23,7 +23,7 @@
                 Visibility="{Binding Path=WorkProcessesErrorVisbility}" >
             </TextBlock>
             <Label>Minutes break per hour</Label>
-            <TextBlock Margin="5 -5 0 0" Foreground="Gray">Must be a number between 0 and 60</TextBlock>
+            <TextBlock Margin="5 -5 0 0" Foreground="Gray">Must be a number between 0 and 59</TextBlock>
             <TextBox Text="{Binding Path=NbrOfMinutesBreak, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      HorizontalAlignment="Left" MinHeight="5" MinWidth="50" Margin="5 5 5 10"></TextBox>
             <TextBlock HorizontalAlignment="Left" Padding="5"
