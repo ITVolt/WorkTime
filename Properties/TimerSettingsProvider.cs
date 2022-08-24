@@ -5,7 +5,7 @@ namespace WorkTime.Properties
 {
     public interface ITimerSettingsProvider
     {
-        Action<TimerSettingsDTO> OnSettingsChange { get; set; }
+        event EventHandler<TimerSettingsDTO> SettingsChanged;
 
         public void UpdateSettings(TimerSettingsDTO settings);
 
@@ -19,12 +19,7 @@ namespace WorkTime.Properties
 
         private TimerSettingsDTO _timerSettings;
 
-        Action<TimerSettingsDTO> OnSettingsChange;
-
-        Action<TimerSettingsDTO> ITimerSettingsProvider.OnSettingsChange {
-            get => OnSettingsChange;
-            set => OnSettingsChange = value; 
-        }
+        public event EventHandler<TimerSettingsDTO> SettingsChanged;
 
         public TimerSettingsProvider(UserSettings settings)
         {
@@ -44,7 +39,7 @@ namespace WorkTime.Properties
                                                     : new List<string>(settings.WorkProcesses);
             _storedUserSettings.NrbOfMinutesBreakPerHour = settings.NrbOfMinutesBreakPerHour;
 
-            OnSettingsChange?.Invoke(settings);
+            SettingsChanged?.Invoke(this, settings);
         }
 
         public TimerSettingsDTO GetSettings() => _timerSettings;

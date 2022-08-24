@@ -88,8 +88,8 @@ namespace WorkTime.ViewModels
         public SettingsViewModel(ITimerSettingsProvider settingsProvider)
         {
             this.settingsProvider = settingsProvider;
-            OnSettingsChanged(settingsProvider.GetSettings());
-            settingsProvider.OnSettingsChange += OnSettingsChanged;
+            UpdateSettingsProperties(settingsProvider.GetSettings());
+            settingsProvider.SettingsChanged += OnSettingsChanged;
 
             SettingsSaveCommand = new Command(OnSettingsSaved);
 
@@ -98,8 +98,9 @@ namespace WorkTime.ViewModels
 
         }
 
-        private void OnSettingsChanged(TimerSettingsDTO newSettings)
-        {
+        private void OnSettingsChanged(object _, TimerSettingsDTO newSettings) => UpdateSettingsProperties(newSettings);
+
+        private void UpdateSettingsProperties(TimerSettingsDTO newSettings) {
             WorkProcesses = FormatWorkProcesses(newSettings);
             NbrOfMinutesBreak = newSettings.NrbOfMinutesBreakPerHour.ToString();
         }
@@ -168,7 +169,7 @@ namespace WorkTime.ViewModels
 
         public override void Dispose()
         {
-            settingsProvider.OnSettingsChange -= OnSettingsChanged;
+            settingsProvider.SettingsChanged -= OnSettingsChanged;
         }
     }
 }

@@ -121,7 +121,7 @@ namespace WorkTime.ViewModels
             SetupPassiveUpdate();
 
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
-            settingsProvider.OnSettingsChange += OnSettingsChanged;
+            settingsProvider.SettingsChanged += OnSettingsChanged;
         }
 
         public WindowSettingsDTO GetLastPositionAndPoint() => this.windowSettingsProvider.GetSettings();
@@ -162,7 +162,7 @@ namespace WorkTime.ViewModels
             UpdateLog(focusChangedEvent);
         }
 
-        private void OnSettingsChanged(TimerSettingsDTO newSettings)
+        private void OnSettingsChanged(object _, TimerSettingsDTO newSettings)
         {
             this.workTimeCalculator = TimeCalculatorFactory.UpdateTimeCalculatorWithNewSettings(
                 currentCalculator: this.workTimeCalculator,
@@ -198,7 +198,7 @@ namespace WorkTime.ViewModels
         public override void Dispose()
         {
             windowFocusChangedProvider.WindowFocusChanged -= OnWindowFocusChanged;
-            timerSettingsProvider.OnSettingsChange -= OnSettingsChanged;
+            timerSettingsProvider.SettingsChanged -= OnSettingsChanged;
         }
     }
 }
