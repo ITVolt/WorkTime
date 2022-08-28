@@ -1,8 +1,8 @@
 ﻿namespace WorkTime.Analysis;
 
-internal enum FocusedOn
+internal enum Focus
 {
     Break,
     Work,
-    NotWork
+    Idle
 }

@@ -29,7 +29,7 @@ internal abstract class TimeCalculator
         this.lastUpdate = (focusChangeEntry.Timestamp, ProcessCountAsWork(focusChangeEntry.ProcessName));
     }
 
-    public (TimeSpan workTimeToday, FocusedOn focusedOn) GetCurrentState()
+    public (TimeSpan workTimeToday, Focus focusedOn) GetCurrentState()
     {
         var currentTime = DateTime.Now;
         var currentFocusIsWork = lastUpdate.wasWork;
@@ -45,5 +45,5 @@ internal abstract class TimeCalculator
 
     protected internal abstract TimeSpan GetWorkTime();
 
-    protected internal abstract FocusedOn GetFocus(bool currentFocusIsWork);
+    protected internal abstract Focus GetFocus(bool currentFocusIsWork);
 }

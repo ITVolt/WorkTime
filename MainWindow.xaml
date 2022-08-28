@@ -4,48 +4,126 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WorkTime"
+        xmlns:viewmodels="clr-namespace:WorkTime.ViewModels"
+        xmlns:converters="clr-namespace:WorkTime.Converters"
+        d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+        xmlns:views="clr-namespace:WorkTime.Views"
         mc:Ignorable="d"
-        Title="Work Time" Height="450" Width="600" MinHeight="{Binding Path=CollapsedHeight}" MinWidth="{Binding Path=CollapsedWidth}">
+        Title="Work Time" 
+        MinHeight="90"
+        MinWidth="120">
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="InverseBoolToVisConverter" TrueValue="Collapsed" FalseValue="Visible"/>
+    </Window.Resources>
     <Grid>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
+                <RowDefinition Height="90"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-
-            <Viewbox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" >
-                <TextBlock Name="WorkTimeTextBlock"
-                           Text="{Binding Path=WorkTimeText}" d:Text="5:38"
-                           Background="{Binding Path=WorkTimeBackground}" d:Background="Wheat">
+            <Grid 
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Grid.Row="0"
+                HorizontalAlignment="Stretch" 
+                Name="WorkTimeGrid" 
+                Background="{Binding WorkTimeBackground}" d:Background="ForestGreen">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Viewbox Grid.Column="0" Grid.ColumnSpan='3' HorizontalAlignment="Center" Grid.Row="0">
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        Name="WorkTimeTextBlock"
+                        Foreground="{Binding WorkTimeTextColor}"
+                        Text="{Binding Path=WorkTimeText}" d:Text="5:38">
+                    </TextBlock>
+                </Viewbox>
+                <TextBlock Grid.Column="1" Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Name="FocusTagBlock"
+                    TextAlignment="Center"
+                    Margin="0 -10 0 5"
+                    Foreground="{Binding WorkTimeTextColor}"
+                    FontSize="14"
+                    Text="{Binding FocusedOnTitle}" d:Text="Work">
                 </TextBlock>
-            </Viewbox>
-            <ScrollViewer Name="LogScrollViewer" Grid.Column="1" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3">
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Hidden" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=WorkTimeGrid}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Button 
+                        Visibility="{Binding Path=IsCollapsed, Converter={StaticResource InverseBoolToVisConverter}}"
+                        Command="{Binding Path=OnCollapseCommand}"
+                        ToolTip="Collapse"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="Black"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Height="24"
+                        Width="24"
+                        Margin="5"
+                        FontSize="16" 
+                        FontWeight="ExtraBold">🞃</Button>
+                    <Button 
+                        Visibility="{Binding Path=IsCollapsed, Converter={StaticResource BoolToVisConverter}, FallbackValue=Collapsed}"
+                        Command="{Binding Path=OnExpandCommand}" 
+                        ToolTip="Expand"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Foreground="Black"
+                        Height="24"
+                        Width="24"
+                        Margin="5"
+                        FontSize="16" 
+                        FontWeight="ExtraBold">🞁</Button>
+                    <Button
+                        BorderThickness="0"
+                        ToolTip="Close"
+                        Background="Transparent"
+                        HorizontalAlignment="Right" 
+                        VerticalAlignment="Top" 
+                        Height="24"
+                        Width="24"
+                        Margin="5"
+                        Click="OnCloseWindowClick"
+                        FontSize="16" 
+                        FontWeight="ExtraBold">X</Button>
+                </Grid>
+            </Grid>
+            <views:Settings DataContext="{Binding SettingsViewModel}"  Grid.Column="0" Grid.Row="1" Padding="0 10 10 0">
+            </views:Settings>
+            <ScrollViewer Grid.Column="1" Grid.Row="1" Margin="0 0 5 0" Name="LogScrollViewer" VerticalScrollBarVisibility="Auto" Padding="10">
                 <TextBlock Name="LogTextBlock"
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch"
-                           TextTrimming="CharacterEllipsis"
-                           d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
+                        Text="{Binding Path=LogText, NotifyOnTargetUpdated=True}"
+                        TargetUpdated="OnLogTextUpdate"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        TextTrimming="CharacterEllipsis"
+                        d:Text="...&#x0a;Teams - In a meeting&#x0a;mstsc - Work remote&#x0a;chrome - Unproductive site" />
             </ScrollViewer>
-            <WrapPanel Grid.Column="0" Grid.Row="1">
-                <WrapPanel.Resources>
-                    <Style TargetType="{x:Type Button}">
-                        <Setter Property="Margin" Value="5,0" />
-                        <Setter Property="Padding" Value="3"></Setter>
-                    </Style>
-                </WrapPanel.Resources>
-                <Button Name="CollapseButton"
-                        Content="Collapse"
-                        Click="CollapseButton_OnClick"/>
-                <Button Name="ReloadSettingsButton"
-                        Content="Reload settings"
-                        Click="ReloadSettingsButton_OnClick"></Button>
-            </WrapPanel>
-            
         </Grid>
     </Grid>
 </Window>

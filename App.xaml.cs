@@ -1,5 +1,8 @@
 ﻿using System.Windows;
 using WorkTime.Properties;
+using WorkTime.ViewModels;
+using WorkTime.WindowsEvents;
+using TimerSettingsProvider = WorkTime.Properties.TimerSettingsFascade;
 
 namespace WorkTime
 {
@@ -12,8 +15,17 @@ namespace WorkTime
         {
             base.OnStartup(e);
 
-            // Make sure changes are saved
+            var timerSettingsFascade = new TimerSettingsProvider(UserSettings.Default);
+            var windowSettingsFascade = new WindowSettingsFascade(UserSettings.Default);
+            var windowFocusChangedProvider = new WindowFocusChangedProvider(UserSettings.Default.IgnoredProcesses);
             UserSettings.Default.PropertyChanged += (_, _) => UserSettings.Default.Save();
+
+            var settingsViewModel = new SettingsViewModel(timerSettingsFascade);
+            var mainViewModel = new MainViewModel(timerSettingsFascade, windowSettingsFascade, windowFocusChangedProvider, settingsViewModel);
+
+            var mainWindow = new MainWindow(mainViewModel);
+
+            mainWindow.Show();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace WorkTime.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.3.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.2.0.0")]
     internal sealed partial class UserSettings : global::System.Configuration.ApplicationSettingsBase {
         
         private static UserSettings defaultInstance = ((UserSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new UserSettings())));
@@ -90,6 +90,30 @@ namespace WorkTime.Properties {
             }
             set {
                 this["WorkProcesses"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LastWasCollapsed {
+            get {
+                return ((bool)(this["LastWasCollapsed"]));
+            }
+            set {
+                this["LastWasCollapsed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0,0")]
+        public global::System.Windows.Point LastCollapsedPosition {
+            get {
+                return ((global::System.Windows.Point)(this["LastCollapsedPosition"]));
+            }
+            set {
+                this["LastCollapsedPosition"] = value;
             }
         }
     }

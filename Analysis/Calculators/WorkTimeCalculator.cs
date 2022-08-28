@@ -23,8 +23,8 @@ internal class WorkTimeCalculator : TimeCalculator
         return this.workTimer.GetWorkTime();
     }
 
-    protected internal override FocusedOn GetFocus(bool currentFocusIsWork)
+    protected internal override Focus GetFocus(bool currentFocusIsWork)
     {
-        return currentFocusIsWork ? FocusedOn.Work : FocusedOn.NotWork;
+        return currentFocusIsWork ? Focus.Work : Focus.Idle;
     }
 }
