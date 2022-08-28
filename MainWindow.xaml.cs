@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Input;
 using WorkTime.Properties;
 using WorkTime.ViewModels;
 
@@ -18,24 +19,22 @@ namespace WorkTime
 
         private Point lastPoint;
 
-        private Command<WindowSettingsDTO> storeLastPositionAndPoint;
+        private Point lastCollapsedPoint;
+
+        private readonly Action<Point, Point, Size> storeLastPositionAndPoint;
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
-            lastSize = new Size(0, 0);
-            lastPoint = new Point(0, 0);
         }
 
-        public void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        public MainWindow(MainViewModel mainViewModel)  : this()
         {
-            if (DataContext is MainViewModel mainViewModel)
-            {
-                RestoreWindowPosition(mainViewModel.GetLastPositionAndPoint());
-                storeLastPositionAndPoint = mainViewModel.SaveLastPositionAndSize;
-                mainViewModel.PropertyChanged += OnCollapsedChanged;
-            }
+            this.DataContext = mainViewModel;
+            
+            RestoreWindowPosition(mainViewModel.GetLastPositionAndPoint());
+            storeLastPositionAndPoint = mainViewModel.StoreLastPositionAndPoint;
+            mainViewModel.PropertyChanged += OnCollapsedChanged;
         }
 
         private void RestoreWindowPosition(WindowSettingsDTO windowSettings)
@@ -43,9 +42,11 @@ namespace WorkTime
             lastSize = new Size(width: windowSettings.LastSize.Width, height: windowSettings.LastSize.Height);
             lastPoint = new Point(windowSettings.LastPosition.X, windowSettings.LastPosition.Y);
 
+            lastCollapsedPoint = new Point(windowSettings.LastCollapsedPosition.X, windowSettings.LastCollapsedPosition.Y);
+
             if (windowSettings.LastWasCollapsed)
             {
-                CollapseView();
+                CollapseView(lastCollapsedPoint);
             }
             else
             {
@@ -58,13 +59,17 @@ namespace WorkTime
             if (DataContext is MainViewModel mainViewModel)
             {
                 mainViewModel.PropertyChanged -= OnCollapsedChanged;
+
+                if (mainViewModel.IsCollapsed)
+                {
+                    this.storeLastPositionAndPoint?.Invoke(lastPoint, new Point(Left, Top), lastSize);
+                }
+                else
+                {
+                    this.storeLastPositionAndPoint?.Invoke(new Point(Left, Top), lastCollapsedPoint, new Size(Width, Height));
+                }
             }
 
-            this.storeLastPositionAndPoint?.Execute(new WindowSettingsDTO()
-            {
-                LastPosition = lastPoint,
-                LastSize = lastSize
-            });
             base.OnClosing(e);
         }
 
@@ -80,15 +85,23 @@ namespace WorkTime
                 lastSize = new Size(width: Width, height: Height);
                 lastPoint = new Point(x: Left, y: Top);
 
-                CollapseView();
+                CollapseView(lastCollapsedPoint);
             }
             else
             {
+                lastCollapsedPoint = new Point(x: Left, y: Top);
                 RestoreView(lastSize, lastPoint);
             }
         }
 
-        private void CollapseView()
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+
+            this.DragMove();
+        }
+
+        private void CollapseView(Point lastCollapsedPoint)
         {
             WindowStyle = WindowStyle.None;
             ResizeMode = ResizeMode.NoResize;
@@ -96,9 +109,8 @@ namespace WorkTime
             Width = CollapsedWidth;
             Height = CollapsedHeight;
 
-            var workingArea = SystemParameters.WorkArea;
-            Left = workingArea.Right - Width;
-            Top = workingArea.Bottom - Height;
+            Left = lastCollapsedPoint.X;
+            Top = lastCollapsedPoint.Y;
         }
 
         private void RestoreView(Size lastSize, Point lastPosition)
@@ -111,6 +123,11 @@ namespace WorkTime
 
             Left = lastPosition.X;
             Top = lastPosition.Y;
+        }
+
+        private void OnCloseWindowClick(object _, EventArgs __)
+        {
+            Close();
         }
 
         private void OnLogTextUpdate(object _, EventArgs __)

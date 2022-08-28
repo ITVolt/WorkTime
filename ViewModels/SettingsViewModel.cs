@@ -6,9 +6,9 @@ using WorkTime.Properties;
 
 namespace WorkTime.ViewModels
 {
-    internal class SettingsViewModel : ViewModelBase
+    public class SettingsViewModel : ViewModelBase
     {
-        private readonly ITimerSettingsProvider settingsProvider;
+        private readonly ITimerSettingsFascade timerSettings;
 
         private string workProcesses;
 
@@ -85,11 +85,11 @@ namespace WorkTime.ViewModels
 
         public Command SettingsSaveCommand { get; init; }
 
-        public SettingsViewModel(ITimerSettingsProvider settingsProvider)
+        public SettingsViewModel(ITimerSettingsFascade timerSetting)
         {
-            this.settingsProvider = settingsProvider;
-            UpdateSettingsProperties(settingsProvider.GetSettings());
-            settingsProvider.SettingsChanged += OnSettingsChanged;
+            this.timerSettings = timerSetting;
+            UpdateSettingsProperties(timerSetting.GetSettings());
+            timerSetting.SettingsChanged += OnSettingsChanged;
 
             SettingsSaveCommand = new Command(OnSettingsSaved);
 
@@ -102,7 +102,7 @@ namespace WorkTime.ViewModels
 
         private void UpdateSettingsProperties(TimerSettingsDTO newSettings) {
             WorkProcesses = FormatWorkProcesses(newSettings);
-            NbrOfMinutesBreak = newSettings.NrbOfMinutesBreakPerHour.ToString();
+            NbrOfMinutesBreak = newSettings.NbrOfMinutesBreakPerHour.ToString();
         }
 
         private void OnSettingsSaved()
@@ -125,11 +125,11 @@ namespace WorkTime.ViewModels
                 (WorkProcessesErrorVisbility, WorkProcessesErrorMessage) = (Visibility.Collapsed, "");
                 (NbrOfMinutesErrorVisibility, NbrOfMinutesErrorMessage) = (Visibility.Collapsed, "");
 
-                settingsProvider.UpdateSettings(new TimerSettingsDTO()
-                {
-                    WorkProcesses = GetWorkProcessFromString(this.WorkProcesses),
-                    NrbOfMinutesBreakPerHour = int.Parse(this.NbrOfMinutesBreak)
-                });
+                timerSettings.UpdateSettings(
+                    new TimerSettingsDTO(
+                        WorkProcesses: GetWorkProcessFromString(this.WorkProcesses), 
+                        NbrOfMinutesBreakPerHour: int.Parse(this.NbrOfMinutesBreak))
+                );
             }
         }
 
@@ -169,7 +169,7 @@ namespace WorkTime.ViewModels
 
         public override void Dispose()
         {
-            settingsProvider.SettingsChanged -= OnSettingsChanged;
+            timerSettings.SettingsChanged -= OnSettingsChanged;
         }
     }
 }

@@ -4,5 +4,5 @@ internal enum Focus
 {
     Break,
     Work,
-    NotWork
+    Idle
 }

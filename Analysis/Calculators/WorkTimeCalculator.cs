@@ -25,6 +25,6 @@ internal class WorkTimeCalculator : TimeCalculator
 
     protected internal override Focus GetFocus(bool currentFocusIsWork)
     {
-        return currentFocusIsWork ? Focus.Work : Focus.NotWork;
+        return currentFocusIsWork ? Focus.Work : Focus.Idle;
     }
 }

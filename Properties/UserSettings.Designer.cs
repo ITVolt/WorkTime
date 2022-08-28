@@ -96,12 +96,24 @@ namespace WorkTime.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool LastCollapsed {
+        public bool LastWasCollapsed {
             get {
-                return ((bool)(this["LastCollapsed"]));
+                return ((bool)(this["LastWasCollapsed"]));
             }
             set {
-                this["LastCollapsed"] = value;
+                this["LastWasCollapsed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0,0")]
+        public global::System.Windows.Point LastCollapsedPosition {
+            get {
+                return ((global::System.Windows.Point)(this["LastCollapsedPosition"]));
+            }
+            set {
+                this["LastCollapsedPosition"] = value;
             }
         }
     }

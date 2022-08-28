@@ -2,7 +2,7 @@
 using WorkTime.Properties;
 using WorkTime.ViewModels;
 using WorkTime.WindowsEvents;
-using TimerSettingsProvider = WorkTime.Properties.TimerSettingsProvider;
+using TimerSettingsProvider = WorkTime.Properties.TimerSettingsFascade;
 
 namespace WorkTime
 {
@@ -15,15 +15,15 @@ namespace WorkTime
         {
             base.OnStartup(e);
 
-            var settingsProvider = new TimerSettingsProvider(UserSettings.Default);
-            var windowSettingsProvider = new WindowSettingsProvider(UserSettings.Default);
+            var timerSettingsFascade = new TimerSettingsProvider(UserSettings.Default);
+            var windowSettingsFascade = new WindowSettingsFascade(UserSettings.Default);
             var windowFocusChangedProvider = new WindowFocusChangedProvider(UserSettings.Default.IgnoredProcesses);
             UserSettings.Default.PropertyChanged += (_, _) => UserSettings.Default.Save();
 
-            var settingsViewModel = new SettingsViewModel(settingsProvider);
-            var mainViewModel = new MainViewModel(settingsProvider, windowSettingsProvider, windowFocusChangedProvider, settingsViewModel);
+            var settingsViewModel = new SettingsViewModel(timerSettingsFascade);
+            var mainViewModel = new MainViewModel(timerSettingsFascade, windowSettingsFascade, windowFocusChangedProvider, settingsViewModel);
 
-            var mainWindow = new MainWindow() { DataContext = mainViewModel };
+            var mainWindow = new MainWindow(mainViewModel);
 
             mainWindow.Show();
         }

@@ -2,9 +2,5 @@
 
 namespace WorkTime.Properties
 {
-    public sealed record TimerSettingsDTO
-    {
-        public IList<string> WorkProcesses { get; init; }
-        public int NrbOfMinutesBreakPerHour { get; init; }
-    }
+    public sealed record TimerSettingsDTO(IList<string> WorkProcesses, int NbrOfMinutesBreakPerHour);
 }

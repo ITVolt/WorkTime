@@ -36,8 +36,8 @@ internal class TimeCalculatorFactory
 
     private static TimeCalculator CreateCalculator(TimerSettingsDTO settings)
     {
-        if (settings.NrbOfMinutesBreakPerHour is > 0 and < 60){
-            return new WorkWithBreakCalculator(settings.WorkProcesses, TimeSpan.FromMinutes(settings.NrbOfMinutesBreakPerHour));
+        if (settings.NbrOfMinutesBreakPerHour is > 0 and < 60){
+            return new WorkWithBreakCalculator(settings.WorkProcesses, TimeSpan.FromMinutes(settings.NbrOfMinutesBreakPerHour));
         }
         return new WorkTimeCalculator(settings.WorkProcesses);
     }

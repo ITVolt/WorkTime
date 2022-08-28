@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace WorkTime.ViewModels
 {
-    internal class ViewModelBase : INotifyPropertyChanged, IDisposable
+    public class ViewModelBase : INotifyPropertyChanged, IDisposable
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

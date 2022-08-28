@@ -12,10 +12,10 @@ using WorkTime.WindowsEvents;
 
 namespace WorkTime.ViewModels
 {
-    internal class MainViewModel : ViewModelBase
+    public class MainViewModel : ViewModelBase
     {
-        private readonly ITimerSettingsProvider timerSettingsProvider;
-        private readonly IWindowSettingsProvider windowSettingsProvider;
+        private readonly ITimerSettingsFascade timerSettings;
+        private readonly IWindowSettingsFascade windowSettings;
         private readonly WindowFocusChangedProvider windowFocusChangedProvider;
         public SettingsViewModel SettingsViewModel { get; }
 
@@ -95,36 +95,33 @@ namespace WorkTime.ViewModels
 
         public Command OnExpandCommand { get; init; }
 
-        public Command<WindowSettingsDTO> SaveLastPositionAndSize { get; }
-
         public MainViewModel(
-            ITimerSettingsProvider settingsProvider, 
-            IWindowSettingsProvider windowSettingsProvider,
+            ITimerSettingsFascade timerSettings, 
+            IWindowSettingsFascade windowSettings,
             WindowFocusChangedProvider windowFocusChangedProvider,
             SettingsViewModel settingsViewModel)
         {
-            this.timerSettingsProvider = settingsProvider;
-            SetupTimeCalculator(settingsProvider.GetSettings());
+            this.timerSettings = timerSettings;
+            SetupTimeCalculator(timerSettings.GetSettings());
 
-            this.windowSettingsProvider = windowSettingsProvider;
-            SaveLastPositionAndSize = new Command<WindowSettingsDTO>(StoreLastPositionAndPoint);
+            this.windowSettings = windowSettings;
 
             this.windowFocusChangedProvider = windowFocusChangedProvider;
 
-            isCollapsed = windowSettingsProvider.GetSettings().LastWasCollapsed;
+            isCollapsed = windowSettings.GetSettings().LastWasCollapsed;
             OnCollapseCommand = new Command(OnCollapse);
             OnExpandCommand = new Command(OnExpand);
 
             SettingsViewModel = settingsViewModel;
 
-            SetupTimeCalculator(settingsProvider.GetSettings());
+            SetupTimeCalculator(timerSettings.GetSettings());
             SetupPassiveUpdate();
 
             windowFocusChangedProvider.WindowFocusChanged += OnWindowFocusChanged;
-            settingsProvider.SettingsChanged += OnSettingsChanged;
+            timerSettings.SettingsChanged += OnSettingsChanged;
         }
 
-        public WindowSettingsDTO GetLastPositionAndPoint() => this.windowSettingsProvider.GetSettings();
+        public WindowSettingsDTO GetLastPositionAndPoint() => this.windowSettings.GetSettings();
 
         private void OnCollapse()
         {
@@ -136,8 +133,8 @@ namespace WorkTime.ViewModels
             this.IsCollapsed = false;
         }
 
-        public void StoreLastPositionAndPoint(WindowSettingsDTO newSettings) {
-            this.windowSettingsProvider.SaveSettings(newSettings with { LastWasCollapsed = isCollapsed });
+        public void StoreLastPositionAndPoint(Point lastPoint, Point lastCollapsedPosition, Size lastSize) {
+            this.windowSettings.SaveSettings(new WindowSettingsDTO(lastPoint, lastCollapsedPosition, lastSize, isCollapsed));
         }
         private void SetupTimeCalculator(TimerSettingsDTO settings)
         {
@@ -183,7 +180,7 @@ namespace WorkTime.ViewModels
         {
             return focusedOn switch
             {
-                Focus.NotWork => ("Idle", Brushes.Black, Brushes.Wheat),
+                Focus.Idle => ("Idle", Brushes.Black, Brushes.Wheat),
                 Focus.Work => ("Work", Brushes.White, Brushes.ForestGreen),
                 Focus.Break => ("Break", Brushes.White, Brushes.CadetBlue),
                 _ => throw new ArgumentException("Does not recognize process with state " + Enum.GetName(focusedOn.GetType(), focusedOn.ToString())),
@@ -198,7 +195,7 @@ namespace WorkTime.ViewModels
         public override void Dispose()
         {
             windowFocusChangedProvider.WindowFocusChanged -= OnWindowFocusChanged;
-            timerSettingsProvider.SettingsChanged -= OnSettingsChanged;
+            timerSettings.SettingsChanged -= OnSettingsChanged;
         }
     }
 }

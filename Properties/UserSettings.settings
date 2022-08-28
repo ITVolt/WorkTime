@@ -28,8 +28,11 @@
 &lt;/ArrayOfString&gt;
 </Value>
     </Setting>
-    <Setting Name="LastCollapsed" Type="System.Boolean" Scope="User">
+    <Setting Name="LastWasCollapsed" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LastCollapsedPosition" Type="System.Windows.Point" Scope="User">
+      <Value Profile="(Default)">0,0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

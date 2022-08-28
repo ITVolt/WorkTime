@@ -2,12 +2,5 @@
 
 namespace WorkTime.Properties
 {
-    public sealed record class WindowSettingsDTO
-    {
-        public Point LastPosition { get; init; }
-
-        public Size LastSize { get; init; }
-
-        public bool LastWasCollapsed { get; init; }
-    }
+    public sealed record class WindowSettingsDTO(Point LastPosition, Point LastCollapsedPosition, Size LastSize, bool LastWasCollapsed);
 }

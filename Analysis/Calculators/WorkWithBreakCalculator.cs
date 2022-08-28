@@ -27,7 +27,7 @@ internal class WorkWithBreakCalculator : TimeCalculator
     {
         return currentFocusIsWork
             ? Focus.Work
-            : this.breakTimer.HasRemainingBreakTime ? Focus.Break : Focus.NotWork;
+            : this.breakTimer.HasRemainingBreakTime ? Focus.Break : Focus.Idle;
     }
     
 }

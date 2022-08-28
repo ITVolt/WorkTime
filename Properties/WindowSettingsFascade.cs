@@ -1,26 +1,26 @@
 ﻿namespace WorkTime.Properties
 {
-    public interface IWindowSettingsProvider
+    public interface IWindowSettingsFascade
     {
         public WindowSettingsDTO GetSettings();
 
         public void SaveSettings(WindowSettingsDTO settings);
     }
 
-    internal class WindowSettingsProvider : IWindowSettingsProvider
+    internal class WindowSettingsFascade : IWindowSettingsFascade
     {
         private readonly UserSettings storedUserSettings;
         private WindowSettingsDTO settings;
 
-        public WindowSettingsProvider(UserSettings userSettings)
+        public WindowSettingsFascade(UserSettings userSettings)
         {
             this.storedUserSettings = userSettings;
-            settings = new WindowSettingsDTO()
-            {
-                LastPosition = userSettings.LastPosition,
-                LastSize = userSettings.LastSize,
-                LastWasCollapsed = userSettings.LastCollapsed
-            };
+
+            settings = new WindowSettingsDTO(
+                LastPosition: userSettings.LastPosition, 
+                LastCollapsedPosition: userSettings.LastCollapsedPosition, 
+                LastSize: userSettings.LastSize, 
+                LastWasCollapsed: userSettings.LastWasCollapsed);
         }
 
         public WindowSettingsDTO GetSettings() => settings;
@@ -28,9 +28,11 @@
         public void SaveSettings(WindowSettingsDTO settings)
         {
             this.settings = settings;
+
             storedUserSettings.LastPosition = settings.LastPosition;
+            storedUserSettings.LastCollapsedPosition = settings.LastCollapsedPosition;
             storedUserSettings.LastSize = settings.LastSize;
-            storedUserSettings.LastCollapsed = settings.LastWasCollapsed;
+            storedUserSettings.LastWasCollapsed = settings.LastWasCollapsed;
         }
     }
 }
